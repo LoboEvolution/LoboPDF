@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2;
+package org.jpedal.jbig2;
 
 import org.jpedal.jbig2.decoders.JBIG2StreamDecoder;
 import org.jpedal.jbig2.image.JBIG2Bitmap;

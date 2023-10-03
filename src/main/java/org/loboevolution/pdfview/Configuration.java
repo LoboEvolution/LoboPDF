@@ -24,7 +24,7 @@
  * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package main.java.org.loboevolution.pdfview;
+package org.loboevolution.pdfview;
 
 /**
  * Since there is no context that is passed between the various classes that

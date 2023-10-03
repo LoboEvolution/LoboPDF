@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.jai;
+package org.jpedal.jbig2.jai;
 
 import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;

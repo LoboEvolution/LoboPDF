@@ -24,7 +24,7 @@
  * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package main.java.org.loboevolution.pdfview.font;
+package org.loboevolution.pdfview.font;
 
 import org.loboevolution.pdfview.PDFObject;
 import org.loboevolution.pdfview.font.cid.PDFCMap;

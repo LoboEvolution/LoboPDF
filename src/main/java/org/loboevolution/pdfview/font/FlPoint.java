@@ -24,7 +24,7 @@
  * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package main.java.org.loboevolution.pdfview.font;
+package org.loboevolution.pdfview.font;
 
 /**
  * A floating-point Point, with public fields.  Also contains a flag

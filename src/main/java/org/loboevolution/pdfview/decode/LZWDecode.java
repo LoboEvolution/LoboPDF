@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.loboevolution.pdfview.decode;
+package org.loboevolution.pdfview.decode;
 
 import lombok.extern.slf4j.Slf4j;
 import org.loboevolution.pdfview.PDFObject;

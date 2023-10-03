@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.segment.region.refinement;
+package org.jpedal.jbig2.segment.region.refinement;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jpedal.jbig2.decoders.JBIG2StreamDecoder;

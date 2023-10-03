@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.segment.symboldictionary;
+package org.jpedal.jbig2.segment.symboldictionary;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jpedal.jbig2.decoders.JBIG2StreamDecoder;

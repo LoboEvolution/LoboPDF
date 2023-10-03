@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.segment.stripes;
+package org.jpedal.jbig2.segment.stripes;
 
 import org.jpedal.jbig2.JBIG2Exception;
 import org.jpedal.jbig2.decoders.JBIG2StreamDecoder;

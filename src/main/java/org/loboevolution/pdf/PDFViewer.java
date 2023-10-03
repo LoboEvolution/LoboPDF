@@ -19,7 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.loboevolution.pdfview.main;
+package org.loboevolution.pdf;
 
 
 import org.loboevolution.pdfview.*;
@@ -36,11 +36,9 @@ import java.awt.print.PageFormat;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Objects;

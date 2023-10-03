@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.jai;
+package org.jpedal.jbig2.jai;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jpedal.jbig2.JBIG2Decoder;

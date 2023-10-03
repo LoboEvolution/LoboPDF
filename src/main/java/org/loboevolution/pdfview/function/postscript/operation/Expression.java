@@ -24,7 +24,7 @@
  * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package main.java.org.loboevolution.pdfview.function.postscript.operation;
+package org.loboevolution.pdfview.function.postscript.operation;
 
 import java.util.LinkedList;
 

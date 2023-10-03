@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.loboevolution.pdfview.function;
+package org.loboevolution.pdfview.function;
 
 import org.loboevolution.pdfview.PDFObject;
 import org.loboevolution.pdfview.function.postscript.PostScriptParser;

@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.io.filter.ccitt;
+package org.jpedal.io.filter.ccitt;
 
 /**
  * provide interface for implementing 3 different types of CCITT

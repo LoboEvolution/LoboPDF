@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.loboevolution.pdfview;
+package org.loboevolution.pdfview;
 
 import org.loboevolution.pdfview.annotation.PDFAnnotation;
 import org.loboevolution.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;

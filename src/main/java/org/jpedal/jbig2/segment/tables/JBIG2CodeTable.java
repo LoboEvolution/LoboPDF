@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.segment.tables;
+package org.jpedal.jbig2.segment.tables;
 
 /**
  * <p>JBIG2CodeTable class.</p>

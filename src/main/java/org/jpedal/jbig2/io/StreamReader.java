@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.io;
+package org.jpedal.jbig2.io;
 
 import org.jpedal.jbig2.pdf.PDFSegment;
 

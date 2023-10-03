@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.loboevolution.pdfview;
+package org.loboevolution.pdfview;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -771,7 +771,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
     public int iterate() throws Exception {
         // make sure we have a page to render
         if (this.page == null) {
-            return Watchable.COMPLETED;
+            return COMPLETED;
         }
 
         // check if this renderer is based on a weak reference to a graphics
@@ -781,7 +781,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
             bi = this.imageRef.get();
             if (bi == null) {
                 PDFDebugger.debug("Image went away.  Stopping");
-                return Watchable.STOPPED;
+                return STOPPED;
             }
 
             this.g = bi.createGraphics();
@@ -791,9 +791,9 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
         // just return, but check if we'return really finished or not
         if (this.currentCommand >= this.page.getCommandCount()) {
             if (this.page.isFinished()) {
-                return Watchable.COMPLETED;
+                return COMPLETED;
             } else {
-                return Watchable.NEEDS_DATA;
+                return NEEDS_DATA;
             }
         }
 
@@ -827,7 +827,7 @@ public class PDFRenderer extends BaseWatchable implements Runnable {
 
         // if we need to stop, it will be caught at the start of the next
         // iteration.
-        return Watchable.RUNNING;
+        return RUNNING;
     }
 
     /**

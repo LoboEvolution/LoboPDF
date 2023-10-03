@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.loboevolution.pdfview.main;
+package org.loboevolution.pdf;
+
+import org.loboevolution.pdf.PDFViewer;
 
 import java.io.Serializable;
 
@@ -37,7 +39,7 @@ class PageBuilder implements Serializable, Runnable {
 	/** The anim. */
 	private transient Thread anim;
 	
-	private final PDFViewer PDFViewer;
+	private final org.loboevolution.pdf.PDFViewer PDFViewer;
 	
 	/**
 	 * <p>Constructor for PageBuilder.</p>

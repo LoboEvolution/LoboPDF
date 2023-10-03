@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.loboevolution.pdfview.main;
+package org.loboevolution.pdf;
 
 import java.awt.Dimension;
 
@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
+import org.loboevolution.pdf.PDFViewer;
 import org.loboevolution.pdfview.PDFFile;
 
 /**
@@ -56,7 +57,7 @@ public class NavigationToolbar extends JToolBar {
 	
 	private final JLabel totalNoOfPages = new JLabel();
 
-	private final PDFViewer PDFViewer;
+	private final org.loboevolution.pdf.PDFViewer PDFViewer;
 
 	/**
 	 * <p>Constructor for NavigationToolbar.</p>

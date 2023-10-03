@@ -24,7 +24,7 @@
  * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package main.java.org.loboevolution.pdfview.decrypt;
+package org.loboevolution.pdfview.decrypt;
 
 import org.loboevolution.pdfview.PDFParseException;
 

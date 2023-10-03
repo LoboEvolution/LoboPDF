@@ -24,7 +24,7 @@
  * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package main.java.org.loboevolution.pdfview;
+package org.loboevolution.pdfview;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;

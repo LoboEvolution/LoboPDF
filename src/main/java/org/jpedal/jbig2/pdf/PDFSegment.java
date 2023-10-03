@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.pdf;
+package org.jpedal.jbig2.pdf;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

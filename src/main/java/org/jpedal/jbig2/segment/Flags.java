@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.segment;
+package org.jpedal.jbig2.segment;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

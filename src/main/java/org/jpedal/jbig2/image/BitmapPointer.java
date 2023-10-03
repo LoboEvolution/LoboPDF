@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2.image;
+package org.jpedal.jbig2.image;
 
 /**
  * <p>BitmapPointer class.</p>

@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.jpedal.jbig2;
+package org.jpedal.jbig2;
 
 /**
  * <p>JBIG2Exception class.</p>

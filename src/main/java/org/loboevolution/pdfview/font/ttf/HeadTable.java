@@ -24,7 +24,7 @@
  * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package main.java.org.loboevolution.pdfview.font.ttf;
+package org.loboevolution.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
 import java.util.Date;

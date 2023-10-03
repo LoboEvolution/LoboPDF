@@ -24,7 +24,7 @@
  * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package main.java.org.loboevolution.pdfview.pattern;
+package org.loboevolution.pdfview.pattern;
 
 import org.loboevolution.pdfview.BaseWatchable;
 import org.loboevolution.pdfview.PDFObject;

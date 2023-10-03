@@ -23,7 +23,7 @@
  *
  * Contact info: ivan.difrancesco@yahoo.it
  */
-package main.java.org.loboevolution.pdfview;
+package org.loboevolution.pdfview;
 
 import org.loboevolution.pdfview.PDFDebugger.DebugStopException;
 import org.loboevolution.pdfview.colorspace.PDFColorSpace;
@@ -385,17 +385,17 @@ public class PDFParser extends BaseWatchable {
         this.cmds = this.pageRef.get();
         if (this.cmds == null) {
             PDFDebugger.debug("Page gone. Stopping", 10);
-            return Watchable.STOPPED;
+            return STOPPED;
         }
         final Object obj;
         try {
             obj = parseObject();
         } catch (final DebugStopException e) {
-            return Watchable.STOPPED;
+            return STOPPED;
         }
         // if there's nothing left to parse, we're done
         if (obj == null) {
-            return Watchable.COMPLETED;
+            return COMPLETED;
         }
         if (obj instanceof Tok) {
             // it's a command. figure out what to do.
@@ -890,7 +890,7 @@ public class PDFParser extends BaseWatchable {
         // release or reference to the page object, so that it can be
         // gc'd if it is no longer in use
         this.cmds = null;
-        return Watchable.RUNNING;
+        return RUNNING;
     }
 
     /**
@@ -1496,7 +1496,7 @@ public class PDFParser extends BaseWatchable {
      */
     @Override
     protected void setStatus(final int status) {
-        if (status == BaseWatchable.COMPLETED) {
+        if (status == COMPLETED) {
             if (!addAnnotation) {
                 // corresponding push in constructor PDFPage
                 this.cmds.addPop();

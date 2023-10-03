@@ -17,11 +17,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-package org.loboevolution.pdfview.main;
+package org.loboevolution.pdf;
 
 import java.awt.Dimension;
 
-import org.loboevolution.pdfview.main.PDFViewer;
 import org.loboevolution.pdfview.PDFFile;
 import org.loboevolution.pdfview.PDFPage;
 
@@ -43,7 +42,7 @@ class PagePreparer extends Thread {
 	 *
 	 * @param waitforPage
 	 *            the current page number, 0 based
-	 * @param PDFViewer a {@link org.loboevolution.pdfview.main.PDFViewer} object.
+	 * @param PDFViewer a {@link org.loboevolution.pdf.PDFViewer} object.
 	 */
 	public PagePreparer(int waitforPage, PDFViewer PDFViewer) {
 		setDaemon(true);
