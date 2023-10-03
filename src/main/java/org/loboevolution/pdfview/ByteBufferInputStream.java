@@ -1,59 +1,69 @@
 /*
- * Copyright 2010 Pirion Systems Pty Ltd, 139 Warry St,
- * Fortitude Valley, Queensland, Australia
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
+package main.java.org.loboevolution.pdfview;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
- * Exposes a {@link java.nio.ByteBuffer} as an {@link java.io.InputStream}.
- *
+ * Exposes a {@link ByteBuffer} as an {@link InputStream}.
+ * <p>
  * Author Luke Kirby
-  *
  */
 public class ByteBufferInputStream extends InputStream {
 
-    /** The underlying byte buffer */
+    /**
+     * The underlying byte buffer
+     */
     private final ByteBuffer buffer;
 
     /**
      * Class constructor
      *
      * @param buffer the buffer to present as an input stream, positioned
-     *  at the current read position of the byte buffer
+     *               at the current read position of the byte buffer
      */
-    public ByteBufferInputStream(ByteBuffer buffer) {
+    public ByteBufferInputStream(final ByteBuffer buffer) {
         this.buffer = buffer;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(final byte[] b, final int off, final int len) throws IOException {
 
         if (b == null) {
-	    throw new NullPointerException();
-	} else if (off < 0 || len < 0 || len > b.length - off) {
-	    throw new IndexOutOfBoundsException();
-	} else if (len == 0) {
-	    return 0;
-	}
+            throw new NullPointerException();
+        } else if (off < 0 || len < 0 || len > b.length - off) {
+            throw new IndexOutOfBoundsException();
+        } else if (len == 0) {
+            return 0;
+        }
 
         final int remaining = buffer.remaining();
         if (remaining == 0) {
@@ -67,9 +77,11 @@ public class ByteBufferInputStream extends InputStream {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public long skip(long n) throws IOException {
+    public long skip(final long n) throws IOException {
         if (n <= 0) {
             return 0;
         } else {
@@ -84,31 +96,41 @@ public class ByteBufferInputStream extends InputStream {
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int read() throws IOException {
         return buffer.get();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int available() throws IOException {
         return buffer.remaining();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void mark(int readlimit) {
+    public void mark(final int readlimit) {
         buffer.mark();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean markSupported() {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void reset() throws IOException {
         buffer.reset();

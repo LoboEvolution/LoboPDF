@@ -1,55 +1,81 @@
-/* Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+/*
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.decode;
-
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
+package main.java.org.loboevolution.pdfview.decode;
 
 import org.loboevolution.pdfview.PDFFile;
 import org.loboevolution.pdfview.PDFObject;
 import org.loboevolution.pdfview.PDFParseException;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+
 /**
  * decode ASCII85 text into a byte array.
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
-public class ASCII85Decode {
+public final class ASCII85Decode {
 
     private final ByteBuffer buf;
 
     /**
      * initialize the decoder with byte buffer in ASCII85 format
      */
-    private ASCII85Decode(ByteBuffer buf) {
+    private ASCII85Decode(final ByteBuffer buf) {
         this.buf = buf;
     }
 
     /**
+     * decode an array of bytes in ASCII85 format.
+     * <p>
+     * In ASCII85 format, every 5 characters represents 4 decoded
+     * bytes in base 85.  The entire stream can contain whitespace,
+     * and ends in the characters '~&gt;'.
+     *
+     * @param buf    the encoded ASCII85 characters in a byte buffer
+     * @param params parameters to the decoder (ignored)
+     * @return the decoded bytes
+     * @throws org.loboevolution.pdfview.PDFParseException if any.
+     */
+    public static ByteBuffer decode(final ByteBuffer buf, final PDFObject params)
+            throws PDFParseException {
+        final ASCII85Decode me = new ASCII85Decode(buf);
+        return me.decode();
+    }
+
+    /**
      * get the next character from the input.
+     *
      * @return the next character, or -1 if at end of stream
      */
     private int nextChar() {
         // skip whitespace
         // returns next character, or -1 if end of stream
         while (this.buf.remaining() > 0) {
-            char c = (char) this.buf.get();
+            final char c = (char) this.buf.get();
 
             if (!PDFFile.isWhiteSpace(c)) {
                 return c;
@@ -65,13 +91,13 @@ public class ASCII85Decode {
      * bytes.  Return false when finished, or true otherwise.
      *
      * @param baos the ByteArrayOutputStream to write output to, set to the
-     *        correct position
+     *             correct position
      * @return false when finished, or true otherwise.
      */
-    private boolean decode5(ByteArrayOutputStream baos)
+    private boolean decode5(final ByteArrayOutputStream baos)
             throws PDFParseException {
         // stream ends in ~>
-        int[] five = new int[5];
+        final int[] five = new int[5];
         int i;
         for (i = 0; i < 5; i++) {
             five[i] = nextChar();
@@ -99,15 +125,15 @@ public class ASCII85Decode {
             i -= 1;
         }
 
-        int value =
+        final int value =
                 five[0] * 85 * 85 * 85 * 85 +
-                five[1] * 85 * 85 * 85 +
-                five[2] * 85 * 85 +
-                five[3] * 85 +
-                five[4];
+                        five[1] * 85 * 85 * 85 +
+                        five[2] * 85 * 85 +
+                        five[3] * 85 +
+                        five[4];
 
         for (int j = 0; j < i; j++) {
-            int shift = 8 * (3 - j);
+            final int shift = 8 * (3 - j);
             baos.write((byte) ((value >> shift) & 0xff));
         }
 
@@ -116,6 +142,7 @@ public class ASCII85Decode {
 
     /**
      * decode the bytes
+     *
      * @return the decoded bytes
      */
     private ByteBuffer decode() throws PDFParseException {
@@ -123,30 +150,12 @@ public class ASCII85Decode {
         this.buf.rewind();
 
         // allocate the output buffer
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        // decode the bytes 
+        // decode the bytes
         while (decode5(baos)) {
         }
 
         return ByteBuffer.wrap(baos.toByteArray());
-    }
-
-    /**
-     * decode an array of bytes in ASCII85 format.
-     * <p>
-     * In ASCII85 format, every 5 characters represents 4 decoded
-     * bytes in base 85.  The entire stream can contain whitespace,
-     * and ends in the characters '~&gt;'.
-     *
-     * @param buf the encoded ASCII85 characters in a byte buffer
-     * @param params parameters to the decoder (ignored)
-     * @return the decoded bytes
-     * @throws org.loboevolution.pdfview.PDFParseException if any.
-     */
-    public static ByteBuffer decode(ByteBuffer buf, PDFObject params)
-            throws PDFParseException {
-        ASCII85Decode me = new ASCII85Decode(buf);
-        return me.decode();
     }
 }

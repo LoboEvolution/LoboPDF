@@ -1,26 +1,31 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
+package main.java.org.loboevolution.pdfview;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Paint;
+import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 
@@ -28,9 +33,8 @@ import java.awt.geom.Rectangle2D;
  * PDFPaint is some kind of shader that knows how to fill a path.
  * At the moment, only a solid color is implemented, but gradients
  * and textures should be possible, too.
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
 public class PDFPaint {
 
@@ -39,29 +43,29 @@ public class PDFPaint {
     /**
      * create a new PDFPaint based on a solid color
      *
-     * @param p a {@link java.awt.Paint} object.
+     * @param p a {@link Paint} object.
      */
-    protected PDFPaint(Paint p) {
+    protected PDFPaint(final Paint p) {
         this.mainPaint = p;
     }
 
     /**
      * get the PDFPaint representing a solid color
      *
-     * @param c a {@link java.awt.Color} object.
+     * @param c a {@link Color} object.
      * @return a {@link org.loboevolution.pdfview.PDFPaint} object.
      */
-    public static PDFPaint getColorPaint(Color c) {
+    public static PDFPaint getColorPaint(final Color c) {
         return getPaint(c);
     }
 
     /**
      * get the PDFPaint representing a generic paint
      *
-     * @param p a {@link java.awt.Paint} object.
+     * @param p a {@link Paint} object.
      * @return a {@link org.loboevolution.pdfview.PDFPaint} object.
      */
-    public static PDFPaint getPaint(Paint p) {
+    public static PDFPaint getPaint(final Paint p) {
         return new PDFPaint(p);
     }
 
@@ -69,12 +73,12 @@ public class PDFPaint {
      * fill a path with the paint, and record the dirty area.
      *
      * @param state the current graphics state
-     * @param g the graphics into which to draw
-     * @param s the path to fill
-     * @return a {@link java.awt.geom.Rectangle2D} object.
+     * @param g     the graphics into which to draw
+     * @param s     the path to fill
+     * @return a {@link Rectangle2D} object.
      */
-    public Rectangle2D fill(PDFRenderer state, Graphics2D g,
-            GeneralPath s) {
+    public Rectangle2D fill(final PDFRenderer state, final Graphics2D g,
+                            final GeneralPath s) {
         g.setPaint(this.mainPaint);
         g.fill(s);
 
@@ -84,7 +88,7 @@ public class PDFPaint {
     /**
      * get the primary color associated with this PDFPaint.
      *
-     * @return a {@link java.awt.Paint} object.
+     * @return a {@link Paint} object.
      */
     public Paint getPaint() {
         return this.mainPaint;

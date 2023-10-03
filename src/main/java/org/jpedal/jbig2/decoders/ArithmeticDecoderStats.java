@@ -1,144 +1,117 @@
-/**
-* ===========================================
-* Java Pdf Extraction Decoding Access Library
-* ===========================================
-*
-* Project Info:  http://www.jpedal.org
-* (C) Copyright 1997-2008, IDRsolutions and Contributors.
-* Main Developer: Simon Barnett
-*
-* 	This file is part of JPedal
-*
-* Copyright (c) 2008, IDRsolutions
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the IDRsolutions nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY IDRsolutions ``AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL IDRsolutions BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* Other JBIG2 image decoding implementations include
-* jbig2dec (http://jbig2dec.sourceforge.net/)
-* xpdf (http://www.foolabs.com/xpdf/)
-* 
-* The final draft JBIG2 specification can be found at http://www.jpeg.org/public/fcd14492.pdf
-* 
-* All three of the above resources were used in the writing of this software, with methodologies,
-* processes and inspiration taken from all three.
-*
-* ---------------
-* ArithmeticDecoderStats.java
-* ---------------
-*/
-package org.jpedal.jbig2.decoders;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
+ */
+package main.java.org.jpedal.jbig2.decoders;
 
 /**
  * <p>ArithmeticDecoderStats class.</p>
- *
-  *
-  *
  */
 public class ArithmeticDecoderStats {
-	private final int contextSize;
-	private final int[] codingContextTable;
+    private final int contextSize;
+    private final int[] codingContextTable;
 
-	/**
-	 * <p>Constructor for ArithmeticDecoderStats.</p>
-	 *
-	 * @param contextSize a int.
-	 */
-	public ArithmeticDecoderStats(int contextSize) {
-		this.contextSize = contextSize;
-		this.codingContextTable = new int[contextSize];
-		
-		//reset();
-	}
+    /**
+     * <p>Constructor for ArithmeticDecoderStats.</p>
+     *
+     * @param contextSize a int.
+     */
+    public ArithmeticDecoderStats(final int contextSize) {
+        this.contextSize = contextSize;
+        this.codingContextTable = new int[contextSize];
 
-	/**
-	 * <p>reset.</p>
-	 */
-	public void reset() {
-		for (int i = 0; i < contextSize; i++) {
-			codingContextTable[i] = 0;
-		}
-	}
+        //reset();
+    }
 
-	/**
-	 * <p>setEntry.</p>
-	 *
-	 * @param codingContext a int.
-	 * @param i a int.
-	 * @param moreProbableSymbol a int.
-	 */
-	public void setEntry(int codingContext, int i, int moreProbableSymbol) {
-		codingContextTable[codingContext] = (i << i) + moreProbableSymbol;
-	}
+    /**
+     * <p>reset.</p>
+     */
+    public void reset() {
+        for (int i = 0; i < contextSize; i++) {
+            codingContextTable[i] = 0;
+        }
+    }
 
-	/**
-	 * <p>getContextCodingTableValue.</p>
-	 *
-	 * @param index a int.
-	 * @return a int.
-	 */
-	public int getContextCodingTableValue(int index) {
-		return codingContextTable[index];
-	}
-	
-	/**
-	 * <p>setContextCodingTableValue.</p>
-	 *
-	 * @param index a int.
-	 * @param value a int.
-	 */
-	public void setContextCodingTableValue(int index, int value) {
-		codingContextTable[index] = value;
-	}
-	
-	/**
-	 * <p>Getter for the field <code>contextSize</code>.</p>
-	 *
-	 * @return a int.
-	 */
-	public int getContextSize() {
-		return contextSize;
-	}
+    /**
+     * <p>setEntry.</p>
+     *
+     * @param codingContext      a int.
+     * @param i                  a int.
+     * @param moreProbableSymbol a int.
+     */
+    public void setEntry(final int codingContext, final int i, final int moreProbableSymbol) {
+        codingContextTable[codingContext] = (i << i) + moreProbableSymbol;
+    }
 
-	/**
-	 * <p>overwrite.</p>
-	 *
-	 * @param stats a {@link org.jpedal.jbig2.decoders.ArithmeticDecoderStats} object.
-	 */
-	public void overwrite(ArithmeticDecoderStats stats) {
+    /**
+     * <p>getContextCodingTableValue.</p>
+     *
+     * @param index a int.
+     * @return a int.
+     */
+    public int getContextCodingTableValue(final int index) {
+        return codingContextTable[index];
+    }
+
+    /**
+     * <p>setContextCodingTableValue.</p>
+     *
+     * @param index a int.
+     * @param value a int.
+     */
+    public void setContextCodingTableValue(final int index, final int value) {
+        codingContextTable[index] = value;
+    }
+
+    /**
+     * <p>Getter for the field <code>contextSize</code>.</p>
+     *
+     * @return a int.
+     */
+    public int getContextSize() {
+        return contextSize;
+    }
+
+    /**
+     * <p>overwrite.</p>
+     *
+     * @param stats a {@link org.jpedal.jbig2.decoders.ArithmeticDecoderStats} object.
+     */
+    public void overwrite(final ArithmeticDecoderStats stats) {
         System.arraycopy(stats.codingContextTable, 0, codingContextTable, 0, contextSize);
-	}
+    }
 
-	/**
-	 * <p>copy.</p>
-	 *
-	 * @return a {@link org.jpedal.jbig2.decoders.ArithmeticDecoderStats} object.
-	 */
-	public ArithmeticDecoderStats copy() {
-		ArithmeticDecoderStats stats = new ArithmeticDecoderStats(contextSize);
+    /**
+     * <p>copy.</p>
+     *
+     * @return a {@link org.jpedal.jbig2.decoders.ArithmeticDecoderStats} object.
+     */
+    public ArithmeticDecoderStats copy() {
+        final ArithmeticDecoderStats stats = new ArithmeticDecoderStats(contextSize);
 
         System.arraycopy(codingContextTable, 0, stats.codingContextTable, 0, contextSize);
 
-		return stats;
-	}
+        return stats;
+    }
 }

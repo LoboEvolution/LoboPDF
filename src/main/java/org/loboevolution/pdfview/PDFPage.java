@@ -1,27 +1,34 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.Shape;
+package main.java.org.loboevolution.pdfview;
+
+import org.loboevolution.pdfview.annotation.PDFAnnotation;
+import org.loboevolution.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
+
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.NoninvertibleTransformException;
@@ -29,14 +36,8 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import org.loboevolution.pdfview.annotation.PDFAnnotation;
-import org.loboevolution.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
+import java.util.*;
 
 /**
  * A PDFPage encapsulates the parsed commands required to render a
@@ -46,56 +47,66 @@ import org.loboevolution.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE;
  * This file also contains all of the PDFCmd commands that might be a part of the command stream in
  * a PDFPage. They probably should be inner classes of PDFPage instead of separate non-public
  * classes.
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
 public class PDFPage {
     /**
-    * the array of commands. The length of this array will always
-    * be greater than or equal to the actual number of commands.
-    */
+     * a map from image info to weak references to parsers that are active
+     */
+    public final Map<ImageInfo, WeakReference<?>> renderers;
+    /**
+     * the array of commands. The length of this array will always
+     * be greater than or equal to the actual number of commands.
+     */
     private final List<PDFCmd> commands;
     /**
-    * whether this page has been finished. If true, there will be no
-    * more commands added to the cmds list.
-    */
-    private boolean finished = false;
-    /** the page number used to find this page */
+     * the page number used to find this page
+     */
     private final int pageNumber;
-    /** the bounding box of the page, in page coordinates */
+    /**
+     * the bounding box of the page, in page coordinates
+     */
     private final Rectangle2D bbox;
-    /** the rotation of this page, in degrees */
+    /**
+     * the rotation of this page, in degrees
+     */
     private final int rotation;
     /**
-    * a map from image info (width, height, clip) to a soft reference to the
-    * rendered image
-    */
+     * a map from image info (width, height, clip) to a soft reference to the
+     * rendered image
+     */
     private final Cache cache;
-    /** a map from image info to weak references to parsers that are active */
-    public final Map<ImageInfo, WeakReference<?>> renderers;
-    /** List of annotations for this page */
+    /**
+     * whether this page has been finished. If true, there will be no
+     * more commands added to the cmds list.
+     */
+    private boolean finished = false;
+    /**
+     * List of annotations for this page
+     */
     private List<PDFAnnotation> annots;
 
     /**
      * create a PDFPage with dimensions in bbox and rotation.
      *
-     * @param bbox a {@link java.awt.geom.Rectangle2D} object.
+     * @param bbox     a {@link Rectangle2D} object.
      * @param rotation a int.
      */
-    public PDFPage(Rectangle2D bbox, int rotation) {
+    public PDFPage(final Rectangle2D bbox, final int rotation) {
         this(-1, bbox, rotation, null);
     }
 
     /**
      * create a PDFPage with dimensions in bbox and rotation.
      *
-     * @param pageNumber a int.
-     * @param bbox a {@link java.awt.geom.Rectangle2D} object.
-     * @param rotation a int.
-     * @param cache a {@link org.loboevolution.pdfview.Cache} object.
+     * @param pageNumber {@link Integer} object.
+     * @param bbox       a {@link Rectangle2D} object.
+     * @param rote       {@link Integer} object.
+     * @param cache      a {@link org.loboevolution.pdfview.Cache} object.
      */
-    public PDFPage(int pageNumber, Rectangle2D bbox, int rotation, Cache cache) {
+    public PDFPage(final int pageNumber, Rectangle2D bbox, final int rote, final Cache cache) {
+        int rotation = rote;
         this.pageNumber = pageNumber;
         this.cache = cache;
         if (bbox == null) {
@@ -121,23 +132,60 @@ public class PDFPage {
     }
 
     /**
+     * <p>createImageCmd.</p>
+     *
+     * @param image a {@link org.loboevolution.pdfview.PDFImage} object.
+     * @return a {@link org.loboevolution.pdfview.PDFImageCmd} object.
+     */
+    public static PDFImageCmd createImageCmd(final PDFImage image) {
+        return new PDFImageCmd(image);
+    }
+
+    /**
+     * <p>createPushCmd.</p>
+     *
+     * @return a {@link org.loboevolution.pdfview.PDFPushCmd} object.
+     */
+    public static PDFPushCmd createPushCmd() {
+        return new PDFPushCmd();
+    }
+
+    /**
+     * <p>createPopCmd.</p>
+     *
+     * @return a {@link org.loboevolution.pdfview.PDFPopCmd} object.
+     */
+    public static PDFPopCmd createPopCmd() {
+        return new PDFPopCmd();
+    }
+
+    /**
+     * <p>createXFormCmd.</p>
+     *
+     * @param at a {@link AffineTransform} object.
+     * @return a {@link org.loboevolution.pdfview.PDFXformCmd} object.
+     */
+    public static PDFXformCmd createXFormCmd(final AffineTransform at) {
+        return new PDFXformCmd(new AffineTransform(at));
+    }
+
+    /**
      * Get the width and height of this image in the correct aspect ratio.
      * The image returned will have at least one of the width and
      * height values identical to those requested. The other
      * dimension may be smaller, so as to keep the aspect ratio
      * the same as in the original page.
      *
-     * @param width
-     * the maximum width of the image
-     * @param height
-     * the maximum height of the image
-     * @param clip
-     * the region in <b>page space</b> of the page to
-     * display. It may be null, in which the page's defined crop box
-     * will be used.
-     * @return a {@link java.awt.Dimension} object.
+     * @param widthSize  the maximum width of the image
+     * @param heightSize the maximum height of the image
+     * @param clip       the region in <b>page space</b> of the page to
+     *                   display. It may be null, in which the page's defined crop box
+     *                   will be used.
+     * @return a {@link Dimension} object.
      */
-    public Dimension getUnstretchedSize(int width, int height, Rectangle2D clip) {
+    public Dimension getUnstretchedSize(final int widthSize, final int heightSize, Rectangle2D clip) {
+        int height = heightSize;
+        int width = widthSize;
         if (clip == null) {
             clip = this.bbox;
         } else {
@@ -145,8 +193,8 @@ public class PDFPage {
                 clip = new Rectangle2D.Double(clip.getX(), clip.getY(), clip.getHeight(), clip.getWidth());
             }
         }
-        double ratio = clip.getHeight() / clip.getWidth();
-        double askratio = (double) height / (double) width;
+        final double ratio = clip.getHeight() / clip.getWidth();
+        final double askratio = (double) height / (double) width;
         if (askratio > ratio) {
             // asked for something too high
             height = (int) (width * ratio + 0.5);
@@ -161,23 +209,19 @@ public class PDFPage {
      * Get an image producer which can be used to draw the image
      * represented by this PDFPage. The ImageProducer is guaranteed to
      * stay in sync with the PDFPage as commands are added to it.
-     *
+     * <p>
      * The image will contain the section of the page specified by the clip,
      * scaled to fit in the area given by width and height.
      *
-     * @param width
-     * the width of the image to be produced
-     * @param height
-     * the height of the image to be produced
-     * @param clip
-     * the region in <b>page space</b> of the entire page to
-     * display
-     * @param observer
-     * an image observer who will be notified when the
-     * image changes, or null
+     * @param width    the width of the image to be produced
+     * @param height   the height of the image to be produced
+     * @param clip     the region in <b>page space</b> of the entire page to
+     *                 display
+     * @param observer an image observer who will be notified when the
+     *                 image changes, or null
      * @return an Image that contains the PDF data
      */
-    public Image getImage(int width, int height, Rectangle2D clip, ImageObserver observer) {
+    public Image getImage(final int width, final int height, final Rectangle2D clip, final ImageObserver observer) {
         return getImage(width, height, clip, observer, true, false);
     }
 
@@ -185,32 +229,26 @@ public class PDFPage {
      * Get an image producer which can be used to draw the image
      * represented by this PDFPage. The ImageProducer is guaranteed to
      * stay in sync with the PDFPage as commands are added to it.
-     *
+     * <p>
      * The image will contain the section of the page specified by the clip,
      * scaled to fit in the area given by width and height.
      *
-     * @param width
-     * the width of the image to be produced
-     * @param height
-     * the height of the image to be produced
-     * @param clip
-     * the region in <b>page space</b> of the entire page to
-     * display
-     * @param observer
-     * an image observer who will be notified when the
-     * image changes, or null
-     * @param drawbg
-     * if true, put a white background on the image. If not,
-     * draw no color (alpha 0) for the background.
-     * @param wait
-     * if true, do not return until this image is fully rendered.
+     * @param width    the width of the image to be produced
+     * @param height   the height of the image to be produced
+     * @param clip     the region in <b>page space</b> of the entire page to
+     *                 display
+     * @param observer an image observer who will be notified when the
+     *                 image changes, or null
+     * @param drawbg   if true, put a white background on the image. If not,
+     *                 draw no color (alpha 0) for the background.
+     * @param wait     if true, do not return until this image is fully rendered.
      * @return an Image that contains the PDF data
      */
-    public Image getImage(int width, int height, Rectangle2D clip, ImageObserver observer, boolean drawbg, boolean wait) {
+    public Image getImage(final int width, final int height, final Rectangle2D clip, final ImageObserver observer, final boolean drawbg, final boolean wait) {
         // see if we already have this image
         BufferedImage image = null;
         PDFRenderer renderer = null;
-        ImageInfo info = new ImageInfo(width, height, clip, null);
+        final ImageInfo info = new ImageInfo(width, height, clip, null);
         if (this.cache != null) {
             image = this.cache.getImage(this, info);
             renderer = this.cache.getImageRenderer(this, info);
@@ -233,13 +271,13 @@ public class PDFPage {
             if (observer != null) {
                 renderer.addObserver(observer);
             }
-            
-			if (!renderer.isFinished()) {
-				renderer.go(wait);
-				if (renderer.getStatus() == Watchable.ERROR) {
-					PDFDebugger.debug("Error during reading image!");
-				}
-			}
+
+            if (!renderer.isFinished()) {
+                renderer.go(wait);
+                if (renderer.getStatus() == Watchable.ERROR) {
+                    PDFDebugger.debug("Error during reading image!");
+                }
+            }
         }
         // return the image
         return image;
@@ -266,7 +304,7 @@ public class PDFPage {
     /**
      * get the bounding box of the page, before any rotation.
      *
-     * @return a {@link java.awt.geom.Rectangle2D} object.
+     * @return a {@link Rectangle2D} object.
      */
     public Rectangle2D getBBox() {
         return this.bbox;
@@ -304,41 +342,38 @@ public class PDFPage {
      * pdf coordinates to an image of the specfied width and
      * height in device coordinates
      *
-     * @param width
-     * the width of the image
-     * @param height
-     * the height of the image
-     * @param clip
-     * the desired clip rectangle (in PDF space) or null to use
-     * the page's bounding box
-     * @return a {@link java.awt.geom.AffineTransform} object.
+     * @param width  the width of the image
+     * @param height the height of the image
+     * @param clip   the desired clip rectangle (in PDF space) or null to use
+     *               the page's bounding box
+     * @return a {@link AffineTransform} object.
      */
     public AffineTransform getInitialTransform(int width, int height, Rectangle2D clip) {
         AffineTransform at = new AffineTransform();
-		switch (getRotation()) {
-		case 0:
-			at = new AffineTransform(1, 0, 0, -1, 0, height);
-			break;
-		case 90:
-			at = new AffineTransform(0, 1, 1, 0, 0, 0);
-			break;
-		case 180:
-			at = new AffineTransform(-1, 0, 0, 1, width, 0);
-			break;
-		case 270:
-			at = new AffineTransform(0, -1, -1, 0, width, height);
-			break;
-		default:
-			break;
-		}
-        double clipW;
-        double clipH;
+        switch (getRotation()) {
+            case 0:
+                at = new AffineTransform(1, 0, 0, -1, 0, height);
+                break;
+            case 90:
+                at = new AffineTransform(0, 1, 1, 0, 0, 0);
+                break;
+            case 180:
+                at = new AffineTransform(-1, 0, 0, 1, width, 0);
+                break;
+            case 270:
+                at = new AffineTransform(0, -1, -1, 0, width, height);
+                break;
+            default:
+                break;
+        }
+        final double clipW;
+        final double clipH;
         if (clip == null) {
             clip = getBBox();
             clipW = clip.getWidth();
             clipH = clip.getHeight();
         } else if (getRotation() == 90 || getRotation() == 270) {
-            int tmp = width;
+            final int tmp = width;
             width = height;
             height = tmp;
             clipW = clip.getHeight();
@@ -348,14 +383,18 @@ public class PDFPage {
             clipH = clip.getHeight();
         }
         // now scale the image to be the size of the clip
-        double scaleX = width / clipW;
-        double scaleY = height / clipH;
+        final double scaleX = width / clipW;
+        final double scaleY = height / clipH;
         at.scale(scaleX, scaleY);
         // create a transform that moves the top left corner of the clip region
         // (minX, minY) to (0,0) in the image
         at.translate(-clip.getMinX(), -clip.getMinY());
         return at;
     }
+
+    /*
+     * get the commands in the page within the given start and end indices
+     */
 
     /**
      * get the current number of commands for this page
@@ -372,14 +411,14 @@ public class PDFPage {
      * @param index a int.
      * @return a {@link org.loboevolution.pdfview.PDFCmd} object.
      */
-    public PDFCmd getCommand(int index) {
+    public PDFCmd getCommand(final int index) {
         return this.commands.get(index);
     }
 
     /**
      * get all the commands in the current page
      *
-     * @return a {@link java.util.List} object.
+     * @return a {@link List} object.
      */
     public List<PDFCmd> getCommands() {
         return this.commands;
@@ -389,36 +428,33 @@ public class PDFPage {
      * get all the commands in the current page starting at the given index
      *
      * @param startIndex a int.
-     * @return a {@link java.util.List} object.
+     * @return a {@link List} object.
      */
-    public List<PDFCmd> getCommands(int startIndex) {
+    public List<PDFCmd> getCommands(final int startIndex) {
         return getCommands(startIndex, getCommandCount());
     }
 
-    /*
-     * get the commands in the page within the given start and end indices
-     */
     /**
      * <p>Getter for the field <code>commands</code>.</p>
      *
      * @param startIndex a int.
-     * @param endIndex a int.
-     * @return a {@link java.util.List} object.
+     * @param endIndex   a int.
+     * @return a {@link List} object.
      */
-    public List<PDFCmd> getCommands(int startIndex, int endIndex) {
+    public List<PDFCmd> getCommands(final int startIndex, final int endIndex) {
         return this.commands.subList(startIndex, endIndex);
     }
 
     /**
      * <p>findLastCommand.</p>
      *
-     * @param cls a {@link java.lang.Class} object.
+     * @param cls a {@link Class} object.
      * @return a {@link org.loboevolution.pdfview.PDFCmd} object.
      */
-    public PDFCmd findLastCommand(Class<?> cls) {
+    public PDFCmd findLastCommand(final Class<?> cls) {
         int index = this.commands.size();
         while (index-- > 0) {
-            PDFCmd cmd = this.commands.get(index);
+            final PDFCmd cmd = this.commands.get(index);
             if (cmd.getClass().isAssignableFrom(cls)) {
                 return cmd;
             }
@@ -431,7 +467,7 @@ public class PDFPage {
      *
      * @param cmd a {@link org.loboevolution.pdfview.PDFCmd} object.
      */
-    public void addCommand(PDFCmd cmd) {
+    public void addCommand(final PDFCmd cmd) {
         synchronized (this.commands) {
             this.commands.add(cmd);
         }
@@ -446,7 +482,7 @@ public class PDFPage {
      *
      * @param page a {@link org.loboevolution.pdfview.PDFPage} object.
      */
-    public void addCommands(PDFPage page) {
+    public void addCommands(final PDFPage page) {
         addCommands(page, null);
     }
 
@@ -455,13 +491,11 @@ public class PDFPage {
      * invoked as the result of an XObject 'do' command, or through a
      * type 3 font.
      *
-     * @param page
-     * the source of other commands. It MUST be finished.
-     * @param extra
-     * a transform to perform before adding the commands.
-     * If null, no extra transform will be added.
+     * @param page  the source of other commands. It MUST be finished.
+     * @param extra a transform to perform before adding the commands.
+     *              If null, no extra transform will be added.
      */
-    public void addCommands(PDFPage page, AffineTransform extra) {
+    public void addCommands(final PDFPage page, final AffineTransform extra) {
         synchronized (this.commands) {
             addPush();
             if (extra != null) {
@@ -499,7 +533,7 @@ public class PDFPage {
     /**
      * wait for finish
      *
-     * @throws java.lang.InterruptedException if any.
+     * @throws InterruptedException if any.
      */
     public synchronized void waitForFinish() throws InterruptedException {
         if (!this.finished) {
@@ -510,17 +544,17 @@ public class PDFPage {
     /**
      * Stop the rendering of a particular image on this page
      *
-     * @param width a int.
+     * @param width  a int.
      * @param height a int.
-     * @param clip a {@link java.awt.geom.Rectangle2D} object.
+     * @param clip   a {@link Rectangle2D} object.
      */
-    public void stop(int width, int height, Rectangle2D clip) {
-        ImageInfo info = new ImageInfo(width, height, clip);
+    public void stop(final int width, final int height, final Rectangle2D clip) {
+        final ImageInfo info = new ImageInfo(width, height, clip);
         synchronized (this.renderers) {
             // find our renderer
-            WeakReference<?> rendererRef = this.renderers.get(info);
+            final WeakReference<?> rendererRef = this.renderers.get(info);
             if (rendererRef != null) {
-                PDFRenderer renderer = (PDFRenderer) rendererRef.get();
+                final PDFRenderer renderer = (PDFRenderer) rendererRef.get();
                 if (renderer != null) {
                     // stop it
                     renderer.stop();
@@ -558,9 +592,9 @@ public class PDFPage {
     /**
      * concatenate a transform to the graphics state
      *
-     * @param at a {@link java.awt.geom.AffineTransform} object.
+     * @param at a {@link AffineTransform} object.
      */
-    public void addXform(AffineTransform at) {
+    public void addXform(final AffineTransform at) {
         // PDFXformCmd xc= lastXformCmd();
         // xc.at.concatenate(at);
         addCommand(new PDFXformCmd(new AffineTransform(at)));
@@ -569,12 +603,11 @@ public class PDFPage {
     /**
      * set the stroke width
      *
-     * @param w
-     * the width of the stroke
+     * @param w the width of the stroke
      * @return a {@link org.loboevolution.pdfview.PDFChangeStrokeCmd} object.
      */
-    public PDFChangeStrokeCmd addStrokeWidth(float w) {
-        PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
+    public PDFChangeStrokeCmd addStrokeWidth(final float w) {
+        final PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
         // if (w == 0) {
         // w = 0.1f;
         // }
@@ -583,56 +616,48 @@ public class PDFPage {
         return sc;
     }
 
-	/**
-	 * set the end cap style
-	 *
-	 * @param capstyle
-	 * the cap style: 0 = BUTT, 1 = ROUND, 2 = SQUARE
-	 */
-	public void addEndCap(int capstyle) {
-		PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
-		int cap;
-		switch (capstyle) {
-		case 0:
-			cap = BasicStroke.CAP_BUTT;
-			break;
-		case 1:
-			cap = BasicStroke.CAP_ROUND;
-			break;
-		case 2:
-			cap = BasicStroke.CAP_SQUARE;
-			break;
-		default:
-			cap = BasicStroke.CAP_BUTT;
-			break;
-		}
-		sc.setEndCap(cap);
-		addCommand(sc);
-	}
+    /**
+     * set the end cap style
+     *
+     * @param capstyle the cap style: 0 = BUTT, 1 = ROUND, 2 = SQUARE
+     */
+    public void addEndCap(final int capstyle) {
+        final PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
+        final int cap;
+        switch (capstyle) {
+            case 1:
+                cap = BasicStroke.CAP_ROUND;
+                break;
+            case 2:
+                cap = BasicStroke.CAP_SQUARE;
+                break;
+            default:
+                cap = BasicStroke.CAP_BUTT;
+                break;
+        }
+        sc.setEndCap(cap);
+        addCommand(sc);
+    }
 
     /**
      * set the line join style
      *
-     * @param joinstyle
-     * the join style: 0 = MITER, 1 = ROUND, 2 = BEVEL
+     * @param joinstyle the join style: 0 = MITER, 1 = ROUND, 2 = BEVEL
      */
-    public void addLineJoin(int joinstyle) {
-        PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
-        int join;
+    public void addLineJoin(final int joinstyle) {
+        final PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
+        final int join;
         switch (joinstyle) {
-        case 0:
-            join = BasicStroke.JOIN_MITER;
-            break;
-        case 1:
-            join = BasicStroke.JOIN_ROUND;
-            break;
-        case 2:
-            join = BasicStroke.JOIN_BEVEL;
-            break;
-        default:
-        	join =  BasicStroke.JOIN_MITER;
-			break;
-		}
+            case 1:
+                join = BasicStroke.JOIN_ROUND;
+                break;
+            case 2:
+                join = BasicStroke.JOIN_BEVEL;
+                break;
+            default:
+                join = BasicStroke.JOIN_MITER;
+                break;
+        }
         sc.setLineJoin(join);
         addCommand(sc);
     }
@@ -642,8 +667,8 @@ public class PDFPage {
      *
      * @param limit a float.
      */
-    public void addMiterLimit(float limit) {
-        PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
+    public void addMiterLimit(final float limit) {
+        final PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
         sc.setMiterLimit(limit);
         addCommand(sc);
     }
@@ -651,13 +676,11 @@ public class PDFPage {
     /**
      * set the dash style
      *
-     * @param dashary
-     * the array of on-off lengths
-     * @param phase
-     * offset of the array at the start of the line drawing
+     * @param dashary the array of on-off lengths
+     * @param phase   offset of the array at the start of the line drawing
      */
-    public void addDash(float[] dashary, float phase) {
-        PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
+    public void addDash(final float[] dashary, final float phase) {
+        final PDFChangeStrokeCmd sc = new PDFChangeStrokeCmd();
         sc.setDash(dashary, phase);
         addCommand(sc);
     }
@@ -665,24 +688,21 @@ public class PDFPage {
     /**
      * set the current path
      *
-     * @param path
-     * the path
-     * @param style
-     * the style: PDFShapeCmd.STROKE, PDFShapeCmd.FILL,
-     * @param autoAdjustStroke
-     * PDFShapeCmd.BOTH, PDFShapeCmd.CLIP, or some combination.
+     * @param path             the path
+     * @param style            the style: PDFShapeCmd.STROKE, PDFShapeCmd.FILL,
+     * @param autoAdjustStroke PDFShapeCmd.BOTH, PDFShapeCmd.CLIP, or some combination.
      */
-    public void addPath(GeneralPath path, int style, boolean autoAdjustStroke) {
+    public void addPath(final GeneralPath path, final int style, final boolean autoAdjustStroke) {
         addCommand(new PDFShapeCmd(path, style, autoAdjustStroke));
     }
 
     /**
      * <p>addShadeCommand.</p>
      *
-     * @param p a {@link org.loboevolution.pdfview.PDFPaint} object.
-     * @param box a {@link java.awt.geom.Rectangle2D} object.
+     * @param p   a {@link org.loboevolution.pdfview.PDFPaint} object.
+     * @param box a {@link Rectangle2D} object.
      */
-    public void addShadeCommand(PDFPaint p, Rectangle2D box) {
+    public void addShadeCommand(final PDFPaint p, final Rectangle2D box) {
         addCommand(new PDFShadeCommand(p, box));
     }
 
@@ -691,7 +711,7 @@ public class PDFPage {
      *
      * @param p a {@link org.loboevolution.pdfview.PDFPaint} object.
      */
-    public void addFillPaint(PDFPaint p) {
+    public void addFillPaint(final PDFPaint p) {
         addCommand(new PDFFillPaintCmd(p));
     }
 
@@ -700,7 +720,7 @@ public class PDFPage {
      *
      * @param p a {@link org.loboevolution.pdfview.PDFPaint} object.
      */
-    public void addStrokePaint(PDFPaint p) {
+    public void addStrokePaint(final PDFPaint p) {
         addCommand(new PDFStrokePaintCmd(p));
     }
 
@@ -709,7 +729,7 @@ public class PDFPage {
      *
      * @param a a float.
      */
-    public void addFillAlpha(float a) {
+    public void addFillAlpha(final float a) {
         addCommand(new PDFFillAlphaCmd(a));
     }
 
@@ -718,17 +738,16 @@ public class PDFPage {
      *
      * @param a a float.
      */
-    public void addStrokeAlpha(float a) {
+    public void addStrokeAlpha(final float a) {
         addCommand(new PDFStrokeAlphaCmd(a));
     }
 
     /**
      * draw an image
      *
-     * @param image
-     * the image to draw
+     * @param image the image to draw
      */
-    public void addImage(PDFImage image) {
+    public void addImage(final PDFImage image) {
         addCommand(new PDFImageCmd(image));
     }
 
@@ -736,8 +755,8 @@ public class PDFPage {
      * Notify all images we know about that a command has been added
      */
     public void updateImages() {
-        for (WeakReference<?> ref : this.renderers.values()) {
-            PDFRenderer renderer = (PDFRenderer) ref.get();
+        for (final WeakReference<?> ref : this.renderers.values()) {
+            final PDFRenderer renderer = (PDFRenderer) ref.get();
             if (renderer != null) {
                 if (renderer.getStatus() == Watchable.NEEDS_DATA) {
                     renderer.setStatus(Watchable.PAUSED);
@@ -746,21 +765,34 @@ public class PDFPage {
         }
     }
 
-     /** Get a list of all annotations for this PDF pag
-     * @return List of {@link org.loboevolution.pdfview.annotation.PDFAnnotation} object.
+    /**
+     * Get a list of all annotations for this PDF pag
+     *
+     * @return List of {@link PDFAnnotation} object.
      */
     public List<PDFAnnotation> getAnnots() {
         return this.annots;
     }
 
-    /** Get a list of all annotations of the given type for this PDF page
-     * @param type a {@link org.loboevolution.pdfview.annotation.PDFAnnotation.ANNOTATION_TYPE} object.
-     * @return List of {@link org.loboevolution.pdfview.annotation.PDFAnnotation} object.
+    /**
+     * Set annotations for this PDF page
+     *
+     * @param annots a {@link PDFAnnotation} object.
      */
-    public List<PDFAnnotation> getAnnots(ANNOTATION_TYPE type) {
-        List<PDFAnnotation> list = new ArrayList<>();
+    public void setAnnots(final List<PDFAnnotation> annots) {
+        this.annots = annots;
+    }
+
+    /**
+     * Get a list of all annotations of the given type for this PDF page
+     *
+     * @param type a {@link ANNOTATION_TYPE} object.
+     * @return List of {@link PDFAnnotation} object.
+     */
+    public List<PDFAnnotation> getAnnots(final ANNOTATION_TYPE type) {
+        final List<PDFAnnotation> list = new ArrayList<>();
         if (this.annots != null) {
-            for (PDFAnnotation annot : this.annots) {
+            for (final PDFAnnotation annot : this.annots) {
                 if (annot.getType() == type) {
                     list.add(annot);
                 }
@@ -769,76 +801,34 @@ public class PDFPage {
         return list;
     }
 
-   /** Set annotations for this PDF page
-     * @param annots a {@link org.loboevolution.pdfview.annotation.PDFAnnotation} object.
-     */
-    public void setAnnots(List<PDFAnnotation> annots) {
-        this.annots = annots;
-    }
-
     /**
      * <p>addAnnotations.</p>
      */
     public void addAnnotations() {
-    	if (this.annots != null) {
-            for (PDFAnnotation pdfAnnotation : this.annots) {
+        if (this.annots != null) {
+            for (final PDFAnnotation pdfAnnotation : this.annots) {
                 // add command to the page if needed
                 this.commands.addAll(pdfAnnotation.getPageCommandsForAnnotation());
             }
-    	}
-    }
-    
-    /**
-     * <p>createImageCmd.</p>
-     *
-     * @param image a {@link org.loboevolution.pdfview.PDFImage} object.
-     * @return a {@link org.loboevolution.pdfview.PDFImageCmd} object.
-     */
-    public static PDFImageCmd createImageCmd(PDFImage image) {
-        return new PDFImageCmd(image);
-    }
-
-    /**
-     * <p>createPushCmd.</p>
-     *
-     * @return a {@link org.loboevolution.pdfview.PDFPushCmd} object.
-     */
-    public static PDFPushCmd createPushCmd() {
-        return new PDFPushCmd();
-    }
-
-    /**
-     * <p>createPopCmd.</p>
-     *
-     * @return a {@link org.loboevolution.pdfview.PDFPopCmd} object.
-     */
-    public static PDFPopCmd createPopCmd() {
-        return new PDFPopCmd();
-    }
-
-    /**
-     * <p>createXFormCmd.</p>
-     *
-     * @param at a {@link java.awt.geom.AffineTransform} object.
-     * @return a {@link org.loboevolution.pdfview.PDFXformCmd} object.
-     */
-    public static PDFXformCmd createXFormCmd(AffineTransform at) {
-        return new PDFXformCmd(new AffineTransform(at));
+        }
     }
 }
 
 /**
-* draw an image
-*/
+ * draw an image
+ */
 class PDFImageCmd extends PDFCmd {
     final PDFImage image;
-    /** {@inheritDoc} */
-    public PDFImageCmd(PDFImage image) {
+
+    /**
+     * {@inheritDoc}
+     */
+    public PDFImageCmd(final PDFImage image) {
         this.image = image;
     }
 
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         return state.drawImage(this.image);
     }
 }
@@ -849,91 +839,91 @@ class PDFImageCmd extends PDFCmd {
 class PDFFillPaintCmd extends PDFCmd {
     final PDFPaint p;
 
-    public PDFFillPaintCmd(PDFPaint p) {
+    public PDFFillPaintCmd(final PDFPaint p) {
         this.p = p;
     }
 
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         state.setFillPaint(this.p);
         return null;
     }
 }
 
 /**
-* set the stroke paint
-*/
+ * set the stroke paint
+ */
 class PDFStrokePaintCmd extends PDFCmd {
 
     final PDFPaint p;
 
-    public PDFStrokePaintCmd(PDFPaint p) {
+    public PDFStrokePaintCmd(final PDFPaint p) {
         this.p = p;
     }
 
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         state.setStrokePaint(this.p);
         return null;
     }
 }
 
 /**
-* set the fill paint
-*/
+ * set the fill paint
+ */
 class PDFFillAlphaCmd extends PDFCmd {
     final float a;
 
-    public PDFFillAlphaCmd(float a) {
+    public PDFFillAlphaCmd(final float a) {
         this.a = a;
     }
 
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         state.setFillAlpha(this.a);
         return null;
     }
 }
 
 /**
-* set the stroke paint
-*/
+ * set the stroke paint
+ */
 class PDFStrokeAlphaCmd extends PDFCmd {
     final float a;
 
-    public PDFStrokeAlphaCmd(float a) {
+    public PDFStrokeAlphaCmd(final float a) {
         this.a = a;
     }
 
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         state.setStrokeAlpha(this.a);
         return null;
     }
 }
 
 /**
-* set the shade paint
-*/
+ * set the shade paint
+ */
 class PDFShadeCommand extends PDFCmd {
     final PDFPaint p;
     final Rectangle2D box;
 
-    PDFShadeCommand(PDFPaint p, Rectangle2D box) {
+    PDFShadeCommand(final PDFPaint p, final Rectangle2D box) {
         this.p = p;
         this.box = box;
     }
 
-    PDFShadeCommand(PDFPaint p) {
+    PDFShadeCommand(final PDFPaint p) {
         this.p = p;
         this.box = null;
     }
 
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         // TODO: Not sure this is the right way to get the area for the sh cmd
         Shape s = box;
-        Shape clip = state.getImage().getGraphics().getClipBounds();
+        final Shape clip = state.getImage().getGraphics().getClipBounds();
         if (clip != null) {
             s = clip;
         }
@@ -941,7 +931,7 @@ class PDFShadeCommand extends PDFCmd {
             s = state.getImage().getData().getBounds();
             try {
                 s = state.getLastTransform().createInverse().createTransformedShape(s);
-            } catch (NoninvertibleTransformException e) {
+            } catch (final NoninvertibleTransformException e) {
                 BaseWatchable.getErrorHandler().publishException(e);
             }
         }
@@ -952,39 +942,39 @@ class PDFShadeCommand extends PDFCmd {
 }
 
 /**
-* push the graphics state
-*/
+ * push the graphics state
+ */
 class PDFPushCmd extends PDFCmd {
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         state.push();
         return null;
     }
 }
 
 /**
-* pop the graphics state
-*/
+ * pop the graphics state
+ */
 class PDFPopCmd extends PDFCmd {
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         state.pop();
         return null;
     }
 }
 
 /**
-* concatenate a transform to the graphics state
-*/
+ * concatenate a transform to the graphics state
+ */
 class PDFXformCmd extends PDFCmd {
     AffineTransform at;
 
     /**
      * <p>Constructor for PDFXformCmd.</p>
      *
-     * @param at a {@link java.awt.geom.AffineTransform} object.
+     * @param at a {@link AffineTransform} object.
      */
-    public PDFXformCmd(AffineTransform at) {
+    public PDFXformCmd(final AffineTransform at) {
         if (at == null) {
             throw new RuntimeException("Null transform in PDFXformCmd");
         }
@@ -992,7 +982,7 @@ class PDFXformCmd extends PDFCmd {
     }
 
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         state.transform(this.at);
         return null;
     }
@@ -1001,15 +991,15 @@ class PDFXformCmd extends PDFCmd {
      * <p>toString.</p>
      *
      * @param state a {@link org.loboevolution.pdfview.PDFRenderer} object.
-     * @return a {@link java.lang.String} object.
+     * @return a {@link String} object.
      */
-    public String toString(PDFRenderer state) {
+    public String toString(final PDFRenderer state) {
         return "PDFXformCmd: " + this.at;
     }
 
     @Override
     public String getDetails() {
-        StringBuilder buf = new StringBuilder();
+        final StringBuilder buf = new StringBuilder();
         buf.append("PDFXformCommand: \n");
         buf.append(this.at.toString());
         return buf.toString();
@@ -1017,8 +1007,8 @@ class PDFXformCmd extends PDFCmd {
 }
 
 /**
-* change the stroke style
-*/
+ * change the stroke style
+ */
 class PDFChangeStrokeCmd extends PDFCmd {
     float w, limit, phase;
     int cap, join;
@@ -1037,21 +1027,20 @@ class PDFChangeStrokeCmd extends PDFCmd {
     }
 
     /**
-    * set the width of the stroke. Rendering needs to account for a minimum
-    * stroke width in creating the output.
-    *
-    * @param w
-    * float
-    */
-    public void setWidth(float w) {
+     * set the width of the stroke. Rendering needs to account for a minimum
+     * stroke width in creating the output.
+     *
+     * @param w float
+     */
+    public void setWidth(final float w) {
         this.w = w;
     }
 
-    public void setEndCap(int cap) {
+    public void setEndCap(final int cap) {
         this.cap = cap;
     }
 
-    public void setLineJoin(int join) {
+    public void setLineJoin(final int join) {
         this.join = join;
     }
 
@@ -1060,17 +1049,17 @@ class PDFChangeStrokeCmd extends PDFCmd {
      *
      * @param limit a float.
      */
-    public void setMiterLimit(float limit) {
+    public void setMiterLimit(final float limit) {
         this.limit = limit;
     }
 
     /**
      * <p>setDash.</p>
      *
-     * @param ary an array of {@link float} objects.
+     * @param ary   an array of {@link float} objects.
      * @param phase a float.
      */
-    public void setDash(float[] ary, float phase) {
+    public void setDash(final float[] ary, final float phase) {
         if (ary != null) {
             // make sure no pairs start with 0, since having no opaque
             // region doesn't make any sense.
@@ -1087,12 +1076,12 @@ class PDFChangeStrokeCmd extends PDFCmd {
     }
 
     @Override
-    public Rectangle2D execute(PDFRenderer state) {
+    public Rectangle2D execute(final PDFRenderer state) {
         state.setStrokeParts(this.w, this.cap, this.join, this.limit, this.ary, this.phase);
         return null;
     }
 
-    public String toString(PDFRenderer state) {
-        return "STROKE: w=" + this.w + " cap=" + this.cap + " join=" + this.join + " limit=" + this.limit + " ary=" + this.ary + " phase=" + this.phase;
+    public String toString(final PDFRenderer state) {
+        return "STROKE: w=" + this.w + " cap=" + this.cap + " join=" + this.join + " limit=" + this.limit + " ary=" + Arrays.toString(this.ary) + " phase=" + this.phase;
     }
 }

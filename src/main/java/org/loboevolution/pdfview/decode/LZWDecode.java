@@ -1,35 +1,42 @@
 /*
- *  Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.decode;
+package main.java.org.loboevolution.pdfview.decode;
+
+import lombok.extern.slf4j.Slf4j;
+import org.loboevolution.pdfview.PDFObject;
+import org.loboevolution.pdfview.PDFParseException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
-
-import org.loboevolution.pdfview.PDFObject;
-import org.loboevolution.pdfview.PDFParseException;
 
 /**
  * decode an LZW-encoded array of bytes.  LZW is a patented algorithm.
  *
- *   <p>Feb 21, 2009 Legal statement on Intellectual Property from Unisys</p><pre>
+ * <p>Feb 21, 2009 Legal statement on Intellectual Property from Unisys</p><pre>
  *   <b><u>LZW Patent Information</u></b> (http://www.unisys.com/about__unisys/lzw)
  *   <u>License Information on GIF and Other LZW-based Technologies
  *   </u>
@@ -63,26 +70,26 @@ import org.loboevolution.pdfview.PDFParseException;
  *   You should consult with your own legal counsel regarding your
  *   particular situation.
  *   </pre>
- *
- *   Mike Wessler
+ * <p>
+ * Mike Wessler
  */
+@Slf4j
 public class LZWDecode {
-	
-	private static final Logger logger = Logger.getLogger(LZWDecode.class.getName());
-    final ByteBuffer buf;
-    int bytepos;
-    int bitpos;
-    final byte[][] dict = new byte[4096][];
-    int dictlen = 0;
-    int bitspercode = 9;
     static final int STOP = 257;
     static final int CLEARDICT = 256;
+    final ByteBuffer buf;
+    final byte[][] dict = new byte[4096][];
+    int bytepos;
+    int bitpos;
+    int dictlen = 0;
+    int bitspercode = 9;
 
     /**
      * initialize this decoder with an array of encoded bytes
+     *
      * @param buf the buffer of bytes
      */
-    private LZWDecode(ByteBuffer buf) throws PDFParseException {
+    private LZWDecode(final ByteBuffer buf) throws PDFParseException {
         for (int i = 0; i < 256; i++) {
             this.dict[i] = new byte[1];
             this.dict[i][0] = (byte) i;
@@ -92,6 +99,31 @@ public class LZWDecode {
         this.buf = buf;
         this.bytepos = 0;
         this.bitpos = 0;
+    }
+
+    /**
+     * decode an array of LZW-encoded bytes to a byte array.
+     *
+     * @param buf    the buffer of encoded bytes
+     * @param params parameters for the decoder (unused)
+     * @return the decoded uncompressed bytes
+     * @throws IOException if any.
+     */
+    public static ByteBuffer decode(final ByteBuffer buf, final PDFObject params)
+            throws IOException {
+        // decode the array
+        final LZWDecode me = new LZWDecode(buf);
+        ByteBuffer outBytes = me.decode();
+
+        // undo a predictor algorithm, if any was used
+        if (params != null && params.getDictionary().containsKey("Predictor")) {
+            final Predictor predictor = Predictor.getPredictor(params);
+            if (predictor != null) {
+                outBytes = predictor.unpredict(outBytes);
+            }
+        }
+
+        return outBytes;
     }
 
     /**
@@ -112,7 +144,7 @@ public class LZWDecode {
             return -1;
         }
         while (fillbits > 0) {
-            int nextbits = this.buf.get(this.bytepos);  // bitsource
+            final int nextbits = this.buf.get(this.bytepos);  // bitsource
             int bitsfromhere = 8 - this.bitpos;  // how many bits can we take?
             if (bitsfromhere > fillbits) { // don't take more than we need
                 bitsfromhere = fillbits;
@@ -131,6 +163,7 @@ public class LZWDecode {
 
     /**
      * decode the array.
+     *
      * @return the uncompressed byte array
      */
     private ByteBuffer decode() throws PDFParseException {
@@ -138,9 +171,9 @@ public class LZWDecode {
         // http://www.rasip.fer.hr/research/compress/algorithms/fund/lz/lzw.html
         // and the PDFReference
         int cW = CLEARDICT;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         while (true) {
-            int pW = cW;
+            final int pW = cW;
             cW = nextCode();
             if (cW == -1) {
                 throw new PDFParseException("Missed the stop code in LZWDecode!");
@@ -149,21 +182,18 @@ public class LZWDecode {
                 break;
             } else if (cW == CLEARDICT) {
                 resetDict();
-            //		pW= -1;
+                //		pW= -1;
             } else if (pW == CLEARDICT) {
                 baos.write(this.dict[cW], 0, this.dict[cW].length);
             } else {
                 if (cW < this.dictlen) {  // it's a code in the dictionary
                     baos.write(this.dict[cW], 0, this.dict[cW].length);
-                    byte[] p = new byte[this.dict[pW].length + 1];
+                    final byte[] p = new byte[this.dict[pW].length + 1];
                     System.arraycopy(this.dict[pW], 0, p, 0, this.dict[pW].length);
                     p[this.dict[pW].length] = this.dict[cW][0];
                     this.dict[this.dictlen++] = p;
-                } else {  // not in the dictionary (should==dictlen)
-                    //		    if (cW!=dictlen) {
-                    //			logger.info("Got a bouncy code: "+cW+" (dictlen="+dictlen+")");
-                    //		    }
-                    byte[] p = new byte[this.dict[pW].length + 1];
+                } else {
+                    final byte[] p = new byte[this.dict[pW].length + 1];
                     System.arraycopy(this.dict[pW], 0, p, 0, this.dict[pW].length);
                     p[this.dict[pW].length] = p[0];
                     baos.write(p, 0, p.length);
@@ -175,30 +205,5 @@ public class LZWDecode {
             }
         }
         return ByteBuffer.wrap(baos.toByteArray());
-    }
-
-    /**
-     * decode an array of LZW-encoded bytes to a byte array.
-     *
-     * @param buf the buffer of encoded bytes
-     * @param params parameters for the decoder (unused)
-     * @return the decoded uncompressed bytes
-     * @throws java.io.IOException if any.
-     */
-    public static ByteBuffer decode(ByteBuffer buf, PDFObject params)
-            throws IOException {
-        // decode the array
-        LZWDecode me = new LZWDecode(buf);
-        ByteBuffer outBytes = me.decode();
-
-        // undo a predictor algorithm, if any was used
-        if (params != null && params.getDictionary().containsKey("Predictor")) {
-            Predictor predictor = Predictor.getPredictor(params);
-            if (predictor != null) {
-                outBytes = predictor.unpredict(outBytes);
-            }
-        }
-
-        return outBytes;
     }
 }

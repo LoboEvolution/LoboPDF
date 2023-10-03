@@ -1,22 +1,33 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.decode;
+package main.java.org.loboevolution.pdfview.decode;
+
+import org.loboevolution.pdfview.PDFObject;
+import org.loboevolution.pdfview.PDFParseException;
+import org.loboevolution.pdfview.decrypt.PDFDecrypterFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -24,39 +35,36 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.loboevolution.pdfview.PDFObject;
-import org.loboevolution.pdfview.PDFParseException;
-import org.loboevolution.pdfview.decrypt.PDFDecrypterFactory;
-
 /**
  * A PDF Decoder encapsulates all the methods of decoding a stream of bytes
  * based on all the various encoding methods.
  * <p>
  * You should use the decodeStream() method of this object rather than using
  * any of the decoders directly.
- *
-  *
-  *
  */
 public class PDFDecoder {
 
-    /** Constant <code>DCT_FILTERS</code> */
-    public static final  Set<String> DCT_FILTERS = new HashSet<>(Arrays.asList("DCT", "DCTDecode"));
+    /**
+     * Constant <code>DCT_FILTERS</code>
+     */
+    public static final Set<String> DCT_FILTERS = new HashSet<>(Arrays.asList("DCT", "DCTDecode"));
 
-    /** Creates a new instance of PDFDecoder */
+    /**
+     * Creates a new instance of PDFDecoder
+     */
     private PDFDecoder() {
     }
 
     /**
      * <p>isLastFilter.</p>
      *
-     * @param dict a {@link org.loboevolution.pdfview.PDFObject} object.
-     * @param filters a {@link java.util.Set} object.
+     * @param dict    a {@link org.loboevolution.pdfview.PDFObject} object.
+     * @param filters a {@link Set} object.
      * @return a boolean.
-     * @throws java.io.IOException if any.
+     * @throws IOException if any.
      */
-    public static boolean isLastFilter(PDFObject dict, Set<String> filters) throws IOException {
-        PDFObject filter = dict.getDictRef("Filter");
+    public static boolean isLastFilter(final PDFObject dict, final Set<String> filters) throws IOException {
+        final PDFObject filter = dict.getDictRef("Filter");
         if (filter == null) {
             return false;
         } else if (filter.getType() == PDFObject.NAME) {
@@ -68,58 +76,30 @@ public class PDFDecoder {
     }
 
     /**
-     * Utility class for reading and storing the specification of
-     * Filters on a stream
-     */
-    private static class FilterSpec
-    {
-        PDFObject[] ary;
-        PDFObject[] params;
-
-        private FilterSpec(PDFObject dict, PDFObject filter) throws IOException {
-            if (filter.getType() == PDFObject.NAME) {
-                ary = new PDFObject[1];
-                ary[0] = filter;
-                params = new PDFObject[1];
-                params[0] = dict.getDictRef("DecodeParms");
-            } else {
-                ary = filter.getArray();
-                PDFObject parmsobj = dict.getDictRef("DecodeParms");
-                if (parmsobj != null) {
-                    params = parmsobj.getArray();
-                } else {
-                    params = new PDFObject[ary.length];
-                }
-            }
-        }
-
-    }
-
-    /**
      * decode a byte[] stream using the filters specified in the object's
      * dictionary (passed as argument 1).
      *
-     * @param dict the dictionary associated with the stream
-     * @param streamBuf the data in the stream, as a byte buffer
-     * @param filterLimits a {@link java.util.Set} object.
-     * @return a {@link java.nio.ByteBuffer} object.
-     * @throws java.io.IOException if any.
+     * @param dict         the dictionary associated with the stream
+     * @param streamBuf    the data in the stream, as a byte buffer
+     * @param filterLimits a {@link Set} object.
+     * @return a {@link ByteBuffer} object.
+     * @throws IOException if any.
      */
-    public static ByteBuffer decodeStream(PDFObject dict, ByteBuffer streamBuf, Set<String> filterLimits)
+    public static ByteBuffer decodeStream(final PDFObject dict, ByteBuffer streamBuf, final Set<String> filterLimits)
             throws IOException {
 
-        PDFObject filter = dict.getDictRef("Filter");
+        final PDFObject filter = dict.getDictRef("Filter");
         if (filter == null) {
             // just apply default decryption
             return dict.getDecrypter().decryptBuffer(null, dict, streamBuf);
         } else {
             // apply filters
-            FilterSpec spec = new FilterSpec(dict, filter);
+            final FilterSpec spec = new FilterSpec(dict, filter);
 
             // determine whether default encryption applies or if there's a
             // specific Crypt filter; it must be the first filter according to
             // the errata for PDF1.7
-            boolean specificCryptFilter =
+            final boolean specificCryptFilter =
                     spec.ary.length != 0 && spec.ary[0].getStringValue().equals("Crypt");
             if (!specificCryptFilter) {
                 // No Crypt filter, so should apply default decryption (if
@@ -129,7 +109,7 @@ public class PDFDecoder {
             }
 
             for (int i = 0; i < spec.ary.length; i++) {
-                String enctype = spec.ary[i].getStringValue();
+                final String enctype = spec.ary[i].getStringValue();
                 try {
                     if (filterLimits.contains(enctype)) {
                         break;
@@ -165,8 +145,8 @@ public class PDFDecoder {
                     } else {
                         throw new PDFParseException("Unknown coding method:" + spec.ary[i].getStringValue());
                     }
-                }catch(Exception e) {
-                    throw new PDFParseException("Problem decoding "+enctype+" encoded stream!", e);
+                } catch (final Exception e) {
+                    throw new PDFParseException("Problem decoding " + enctype + " encoded stream!", e);
                 }
 
             }
@@ -177,11 +157,12 @@ public class PDFDecoder {
 
     /**
      * The name of the Crypt filter to apply
+     *
      * @param param the parameters to the Crypt filter
      * @return the name of the crypt filter to apply
      * @throws IOException if there's a problem reading the objects
      */
-    private static String getCryptFilterName(PDFObject param) throws IOException {
+    private static String getCryptFilterName(final PDFObject param) throws IOException {
         String cfName = PDFDecrypterFactory.CF_IDENTITY;
         if (param != null) {
             final PDFObject nameObj = param.getDictRef("Name");
@@ -198,33 +179,60 @@ public class PDFDecoder {
      *
      * @param dict the stream dictionary
      * @return whether the stream is encrypted
-     * @throws java.io.IOException if any.
+     * @throws IOException if any.
      */
-    public static boolean isEncrypted(PDFObject dict)
+    public static boolean isEncrypted(final PDFObject dict)
             throws IOException {
 
-        PDFObject filter = dict.getDictRef("Filter");
+        final PDFObject filter = dict.getDictRef("Filter");
         if (filter == null) {
             // just apply default decryption
             return dict.getDecrypter().isEncryptionPresent();
         } else {
 
             // apply filters
-            FilterSpec spec = new FilterSpec(dict, filter);
+            final FilterSpec spec = new FilterSpec(dict, filter);
 
             // determine whether default encryption applies or if there's a
             // specific Crypt filter; it must be the first filter according to
             // the errata for PDF1.7
-            boolean specificCryptFilter = spec.ary.length != 0 &&
+            final boolean specificCryptFilter = spec.ary.length != 0 &&
                     spec.ary[0].getStringValue().equals("Crypt");
             if (!specificCryptFilter) {
                 // No Crypt filter, so we just need to refer to
                 // the default decrypter
                 return dict.getDecrypter().isEncryptionPresent();
             } else {
-                String cfName = getCryptFilterName(spec.params[0]);
+                final String cfName = getCryptFilterName(spec.params[0]);
                 // see whether the specified crypt filter really decrypts
                 return dict.getDecrypter().isEncryptionPresent(cfName);
+            }
+        }
+
+    }
+
+    /**
+     * Utility class for reading and storing the specification of
+     * Filters on a stream
+     */
+    private static class FilterSpec {
+        PDFObject[] ary;
+        PDFObject[] params;
+
+        private FilterSpec(final PDFObject dict, final PDFObject filter) throws IOException {
+            if (filter.getType() == PDFObject.NAME) {
+                ary = new PDFObject[1];
+                ary[0] = filter;
+                params = new PDFObject[1];
+                params[0] = dict.getDictRef("DecodeParms");
+            } else {
+                ary = filter.getArray();
+                final PDFObject parmsobj = dict.getDictRef("DecodeParms");
+                if (parmsobj != null) {
+                    params = parmsobj.getArray();
+                } else {
+                    params = new PDFObject[ary.length];
+                }
             }
         }
 

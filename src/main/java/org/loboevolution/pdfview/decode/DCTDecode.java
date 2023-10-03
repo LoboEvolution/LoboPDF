@@ -1,23 +1,30 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.decode;
+package main.java.org.loboevolution.pdfview.decode;
 
 import org.loboevolution.pdfview.PDFObject;
 import org.loboevolution.pdfview.PDFParseException;
@@ -33,9 +40,8 @@ import java.nio.ByteBuffer;
 /**
  * decode a DCT encoded array into a byte array.  This class uses Java's
  * built-in JPEG image class to do the decoding.
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
 public class DCTDecode {
 
@@ -59,12 +65,12 @@ public class DCTDecode {
      * @return the decoded buffer
      * @throws org.loboevolution.pdfview.PDFParseException if any.
      */
-    protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws PDFParseException {
+    protected static ByteBuffer decode(final PDFObject dict, final ByteBuffer buf, final PDFObject params) throws PDFParseException {
         // BEGIN PATCH W. Randelshofer Completely rewrote decode routine in
         // order to
         // support JPEG images in the CMYK color space.
-        BufferedImage bimg = loadImageData(buf);
-        byte[] output = ImageDataDecoder.decodeImageData(bimg);
+        final BufferedImage bimg = loadImageData(buf);
+        final byte[] output = ImageDataDecoder.decodeImageData(bimg);
         return ByteBuffer.wrap(output);
         // END PATCH W. Randelshofer Completely rewrote decode routine in order
         // to
@@ -74,33 +80,33 @@ public class DCTDecode {
 
 
     /*************************************************************************
-     * @param buf  a {@link java.nio.ByteBuffer} object.
-     * @return a {@link java.awt.image.BufferedImage} object.
+     * @param buf  a {@link ByteBuffer} object.
+     * @return a {@link BufferedImage} object.
      * @throws PDFParseException in case of error
      ************************************************************************/
 
-    private static BufferedImage loadImageData(ByteBuffer buf)
+    private static BufferedImage loadImageData(final ByteBuffer buf)
             throws PDFParseException {
         buf.rewind();
-        byte[] input = new byte[buf.remaining()];
+        final byte[] input = new byte[buf.remaining()];
         buf.get(input);
         BufferedImage bimg;
         try {
             try {
                 bimg = ImageIO.read(new ByteArrayInputStream(input));
-            } catch (IllegalArgumentException colorProfileMismatch) {
+            } catch (final IllegalArgumentException colorProfileMismatch) {
                 // we experienced this problem with an embedded jpeg
                 // that specified a icc color profile with 4 components
                 // but the raster had only 3 bands (apparently YCC encoded)
-                Image img = Toolkit.getDefaultToolkit().createImage(input);
+                final Image img = Toolkit.getDefaultToolkit().createImage(input);
                 // wait until image is loaded using ImageIcon for convenience
-                ImageIcon imageIcon = new ImageIcon(img);
+                final ImageIcon imageIcon = new ImageIcon(img);
                 // copy to buffered image
                 bimg = new BufferedImage(imageIcon.getIconWidth(), imageIcon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
                 bimg.getGraphics().drawImage(img, 0, 0, null);
             }
-        } catch (Exception ex) {
-            PDFParseException ex2 = new PDFParseException("DCTDecode failed");
+        } catch (final Exception ex) {
+            final PDFParseException ex2 = new PDFParseException("DCTDecode failed");
             ex2.initCause(ex);
             throw ex2;
         }
@@ -117,13 +123,13 @@ public class DCTDecode {
 class MyTracker implements ImageObserver {
     boolean done = false;
 
-     /**
-      * create a new MyTracker that watches this image.
-      * The image will start loading immediately.
-      *
-      * @param img a {@link java.awt.Image} object.
-      */
-    public MyTracker(Image img) {
+    /**
+     * create a new MyTracker that watches this image.
+     * The image will start loading immediately.
+     *
+     * @param img a {@link Image} object.
+     */
+    public MyTracker(final Image img) {
         img.getWidth(this);
     }
 
@@ -132,8 +138,8 @@ class MyTracker implements ImageObserver {
      * More information has come in about the image.
      */
     @Override
-    public boolean imageUpdate(Image img, int infoflags, int x, int y,
-                               int width, int height) {
+    public boolean imageUpdate(final Image img, final int infoflags, final int x, final int y,
+                               final int width, final int height) {
         if ((infoflags & (ALLBITS | ERROR | ABORT)) != 0) {
             synchronized (this) {
                 this.done = true;
@@ -144,14 +150,14 @@ class MyTracker implements ImageObserver {
         return true;
     }
 
-     /**
-      * Wait until the image is done, then return.
-      */
+    /**
+     * Wait until the image is done, then return.
+     */
     public synchronized void waitForAll() {
         if (!this.done) {
             try {
                 wait();
-            } catch (InterruptedException ie) {
+            } catch (final InterruptedException ie) {
             }
         }
     }

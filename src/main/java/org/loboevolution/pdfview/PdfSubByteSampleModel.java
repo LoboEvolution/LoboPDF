@@ -1,24 +1,29 @@
 /*
- * $Id: PdfSubByteSampleModel.java,v 1.1 2010-05-23 22:07:05 lujke Exp $
+ * MIT License
  *
- * Copyright 2010 Pirion Systems Pty Ltd, 139 Warry St,
- * Fortitude Valley, Queensland, Australia
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
+package main.java.org.loboevolution.pdfview;
 
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
@@ -31,12 +36,10 @@ import java.awt.image.SampleModel;
  * {@link java.awt.image.MultiPixelPackedSampleModel}, which allows for sub-byte
  * components, does not allow for such byte spanning, while the PDF
  * specification does permit it -- hence the existence of this class.
- *
+ * <p>
  * Author Luke Kirby, Pirion Systems
-  *
  */
-public class PdfSubByteSampleModel extends SampleModel
-{
+public class PdfSubByteSampleModel extends SampleModel {
     private final int transferBytesPerPixel;
     private final int storageBitsPerPixel;
     private final int bitsPerLine;
@@ -48,13 +51,12 @@ public class PdfSubByteSampleModel extends SampleModel
     /**
      * <p>Constructor for PdfSubByteSampleModel.</p>
      *
-     * @param w a int.
-     * @param h a int.
-     * @param numComponents a int.
+     * @param w                a int.
+     * @param h                a int.
+     * @param numComponents    a int.
      * @param bitsPerComponent a int.
      */
-    public PdfSubByteSampleModel(int w, int h, int numComponents, int bitsPerComponent)
-    {
+    public PdfSubByteSampleModel(final int w, final int h, final int numComponents, final int bitsPerComponent) {
         super(DataBuffer.TYPE_BYTE, w, h, numComponents);
         assert bitsPerComponent < 8 : "This is designed just for use with per-component sizes of less than 8 bits; " +
                 "you should probably use PixelInterleavedSampleModel";
@@ -74,18 +76,20 @@ public class PdfSubByteSampleModel extends SampleModel
         ignoredBitsPerComponentPerByte = 8 - bitsPerBand;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public int getNumDataElements()
-    {
+    public int getNumDataElements() {
         return transferBytesPerPixel;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Object getDataElements(int x, int y, Object obj, DataBuffer data)
-    {
-        byte[] elements = obj != null ? (byte[])obj : new byte[numBands];
+    public Object getDataElements(final int x, final int y, final Object obj, final DataBuffer data) {
+        final byte[] elements = obj != null ? (byte[]) obj : new byte[numBands];
         int bitIndex = y * bitsPerLine + storageBitsPerPixel * x;
         for (int i = 0; i < elements.length; ++i) {
             elements[i] = (byte) getComponent(data, bitIndex);
@@ -94,69 +98,76 @@ public class PdfSubByteSampleModel extends SampleModel
         return elements;
     }
 
-    private int getComponent(DataBuffer data, int aBitIndex)
-    {
+    private int getComponent(final DataBuffer data, final int aBitIndex) {
         final int boffset = aBitIndex >> 3; // == aBitIndex / 8
         final int b = data.getElem(boffset);
         final int bitIndexInB = aBitIndex & 7;
-        final int shift =  ignoredBitsPerComponentPerByte - bitIndexInB;
+        final int shift = ignoredBitsPerComponentPerByte - bitIndexInB;
         return (b >>> shift) & componentMask;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void setDataElements(int x, int y, Object obj, DataBuffer data)
-    {
+    public void setDataElements(final int x, final int y, final Object obj, final DataBuffer data) {
         throw new UnsupportedOperationException("read only");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public int getSample(int x, int y, int b, DataBuffer data)
-    {
+    public int getSample(final int x, final int y, final int b, final DataBuffer data) {
         return getComponent(data, y * bitsPerLine + storageBitsPerPixel * x + bitsPerBand * b);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void setSample(int x, int y, int b, int s, DataBuffer data)
-    {
+    public void setSample(final int x, final int y, final int b, final int s, final DataBuffer data) {
         throw new UnsupportedOperationException("read only");
 
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public SampleModel createCompatibleSampleModel(int w, int h)
-    {
+    public SampleModel createCompatibleSampleModel(final int w, final int h) {
         throw new UnsupportedOperationException("Not required");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public SampleModel createSubsetSampleModel(int[] bands)
-    {
+    public SampleModel createSubsetSampleModel(final int[] bands) {
         throw new UnsupportedOperationException("Not required");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public DataBuffer createDataBuffer()
-    {
+    public DataBuffer createDataBuffer() {
         throw new UnsupportedOperationException("Not required");
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public int[] getSampleSize()
-    {
+    public int[] getSampleSize() {
         return sampleSize;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public int getSampleSize(int band)
-    {
+    public int getSampleSize(final int band) {
         return bitsPerBand;
     }
 }

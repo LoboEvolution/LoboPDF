@@ -1,23 +1,30 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.decode;
+package main.java.org.loboevolution.pdfview.decode;
 
 import org.loboevolution.pdfview.PDFFile;
 import org.loboevolution.pdfview.PDFObject;
@@ -28,30 +35,49 @@ import java.nio.ByteBuffer;
 
 /**
  * decode an array of hex nybbles into a byte array
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
-public class ASCIIHexDecode {
+public final class ASCIIHexDecode {
     private final ByteBuffer buf;
-    
+
     /**
      * initialize the decoder with an array of bytes in ASCIIHex format
      */
-    private ASCIIHexDecode(ByteBuffer buf) {
-	this.buf = buf;
+    private ASCIIHexDecode(final ByteBuffer buf) {
+        this.buf = buf;
+    }
+
+    /**
+     * decode an array of bytes in ASCIIHex format.
+     * <p>
+     * ASCIIHex format consists of a sequence of Hexidecimal
+     * digits, with possible whitespace, ending with the
+     * '&gt;' character.
+     *
+     * @param buf    the encoded ASCII85 characters in a byte
+     *               buffer
+     * @param params parameters to the decoder (ignored)
+     * @return the decoded bytes
+     * @throws PDFParseException if any.
+     */
+    public static ByteBuffer decode(final ByteBuffer buf, final PDFObject params)
+            throws PDFParseException {
+        final ASCIIHexDecode me = new ASCIIHexDecode(buf);
+        return me.decode();
     }
 
     /**
      * get the next character from the input
+     *
      * @return a number from 0-15, or -1 for the end character
      */
-    private int readHexDigit() throws PDFParseException {    
+    private int readHexDigit() throws PDFParseException {
         // read until we hit a non-whitespace character or the
         // end of the stream
         while (this.buf.remaining() > 0) {
             int c = this.buf.get();
-        
+
             // see if we found a useful character
             if (!PDFFile.isWhiteSpace((char) c)) {
                 if (c >= '0' && c <= '9') {
@@ -64,21 +90,22 @@ public class ASCIIHexDecode {
                     c = -1;
                 } else {
                     // unknown character
-                    throw new PDFParseException("Bad character " + c + 
-                                                "in ASCIIHex decode");
+                    throw new PDFParseException("Bad character " + c +
+                            "in ASCIIHex decode");
                 }
-                
+
                 // return the useful character
                 return c;
             }
         }
-        
+
         // end of stream reached
-	throw new PDFParseException("Short stream in ASCIIHex decode");
+        throw new PDFParseException("Short stream in ASCIIHex decode");
     }
 
     /**
      * decode the array
+     *
      * @return the decoded bytes
      */
     private ByteBuffer decode() throws PDFParseException {
@@ -86,14 +113,14 @@ public class ASCIIHexDecode {
         buf.rewind();
 
         // allocate the output buffer
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         while (true) {
-            int first = readHexDigit();
+            final int first = readHexDigit();
             if (first == -1) {
                 break;
             }
-            int second = readHexDigit();
+            final int second = readHexDigit();
 
             if (second == -1) {
                 baos.write((byte) (first << 4));
@@ -104,25 +131,5 @@ public class ASCIIHexDecode {
         }
 
         return ByteBuffer.wrap(baos.toByteArray());
-    }
-
-    /**
-     * decode an array of bytes in ASCIIHex format.
-     * <p>
-     * ASCIIHex format consists of a sequence of Hexidecimal
-     * digits, with possible whitespace, ending with the
-     * '&gt;' character.
-     *
-     * @param buf the encoded ASCII85 characters in a byte
-     *        buffer
-     * @param params parameters to the decoder (ignored)
-     * @return the decoded bytes
-     * @throws org.loboevolution.pdfview.PDFParseException if any.
-     */
-    public static ByteBuffer decode(ByteBuffer buf, PDFObject params)
-	throws PDFParseException 
-    {
-	ASCIIHexDecode me = new ASCIIHexDecode(buf);
-	return me.decode();
     }
 }

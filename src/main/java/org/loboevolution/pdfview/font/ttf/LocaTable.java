@@ -1,57 +1,65 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.font.ttf;
+package main.java.org.loboevolution.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
 
 /**
  * Model the TrueType Loca table
- *
-  *
-  *
  */
 public class LocaTable extends TrueTypeTable {
-    /** if true, the table stores glyphs in long format */
+    /**
+     * if true, the table stores glyphs in long format
+     */
     private final boolean isLong;
-    
-    /** the offsets themselves */
+
+    /**
+     * the offsets themselves
+     */
     private final int[] offsets;
-    
+
     /**
      * Creates a new instance of HmtxTable
      *
      * @param ttf a {@link org.loboevolution.pdfview.font.ttf.TrueTypeFont} object.
      */
-    protected LocaTable(TrueTypeFont ttf) {
-        super (TrueTypeTable.LOCA_TABLE);
-    
-        MaxpTable maxp = (MaxpTable) ttf.getTable("maxp");
-        int numGlyphs = maxp.getNumGlyphs();
-        
-        HeadTable head = (HeadTable) ttf.getTable("head");
-        short format = head.getIndexToLocFormat();
+    protected LocaTable(final TrueTypeFont ttf) {
+        super(TrueTypeTable.LOCA_TABLE);
+
+        final MaxpTable maxp = (MaxpTable) ttf.getTable("maxp");
+        final int numGlyphs = maxp.getNumGlyphs();
+
+        final HeadTable head = (HeadTable) ttf.getTable("head");
+        final short format = head.getIndexToLocFormat();
         this.isLong = (format == 1);
-        
-        this.offsets = new int[numGlyphs + 1]; 
+
+        this.offsets = new int[numGlyphs + 1];
     }
-    
+
     /**
      * get the offset, in bytes, of a given glyph from the start of
      * the glyph table
@@ -59,20 +67,20 @@ public class LocaTable extends TrueTypeTable {
      * @param glyphID a int.
      * @return a int.
      */
-    public int getOffset(int glyphID) {
+    public int getOffset(final int glyphID) {
         return this.offsets[glyphID];
     }
-      
+
     /**
      * get the size, in bytes, of the given glyph
      *
      * @param glyphID a int.
      * @return a int.
      */
-    public int getSize(int glyphID) {
+    public int getSize(final int glyphID) {
         return this.offsets[glyphID + 1] - this.offsets[glyphID];
     }
-    
+
     /**
      * Return true if the glyphs arte in long (int) format, or
      * false if they are in short (short) format
@@ -82,57 +90,57 @@ public class LocaTable extends TrueTypeTable {
     public boolean isLongFormat() {
         return this.isLong;
     }
-    
-   
-	/**
-	 * {@inheritDoc}
-	 *
-	 * get the data in this map as a ByteBuffer
-	 */
+
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * get the data in this map as a ByteBuffer
+     */
     @Override
-	public ByteBuffer getData() {
-        int size = getLength();
-        
-        ByteBuffer buf = ByteBuffer.allocate(size);
-        
+    public ByteBuffer getData() {
+        final int size = getLength();
+
+        final ByteBuffer buf = ByteBuffer.allocate(size);
+
         // write the offsets
-        for (int offset : this.offsets) {
+        for (final int offset : this.offsets) {
             if (isLongFormat()) {
                 buf.putInt(offset);
             } else {
                 buf.putShort((short) (offset / 2));
             }
         }
-        
+
         // reset the start pointer
         buf.flip();
-        
+
         return buf;
     }
-    
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Initialize this structure from a ByteBuffer
-	 */
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Initialize this structure from a ByteBuffer
+     */
     @Override
-	public void setData(ByteBuffer data) {
+    public void setData(final ByteBuffer data) {
         for (int i = 0; i < this.offsets.length; i++) {
             if (isLongFormat()) {
                 this.offsets[i] = data.getInt();
             } else {
-                this.offsets[i] = 2 * ( 0xFFFF & data.getShort());
+                this.offsets[i] = 2 * (0xFFFF & data.getShort());
             }
         }
     }
-    
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get the length of this table
-	 */
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get the length of this table
+     */
     @Override
-	public int getLength() {
+    public int getLength() {
         if (isLongFormat()) {
             return this.offsets.length * 4;
         } else {

@@ -1,30 +1,35 @@
-/* Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+/*
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.font.ttf;
+package main.java.org.loboevolution.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
 
 /**
  * The base class for TrueType tables.  Specific tables can extend this
  * to add more functionality
- *
-  *
-  *
  */
 public class TrueTypeTable {
 
@@ -32,21 +37,37 @@ public class TrueTypeTable {
      * Well known tables
      */
     public static final int CMAP_TABLE = 0x636d6170;
-    /** Constant <code>GLYF_TABLE=0x676c7966</code> */
+    /**
+     * Constant <code>GLYF_TABLE=0x676c7966</code>
+     */
     public static final int GLYF_TABLE = 0x676c7966;
-    /** Constant <code>HEAD_TABLE=0x68656164</code> */
+    /**
+     * Constant <code>HEAD_TABLE=0x68656164</code>
+     */
     public static final int HEAD_TABLE = 0x68656164;
-    /** Constant <code>HHEA_TABLE=0x68686561</code> */
+    /**
+     * Constant <code>HHEA_TABLE=0x68686561</code>
+     */
     public static final int HHEA_TABLE = 0x68686561;
-    /** Constant <code>HMTX_TABLE=0x686d7478</code> */
+    /**
+     * Constant <code>HMTX_TABLE=0x686d7478</code>
+     */
     public static final int HMTX_TABLE = 0x686d7478;
-    /** Constant <code>MAXP_TABLE=0x6d617870</code> */
+    /**
+     * Constant <code>MAXP_TABLE=0x6d617870</code>
+     */
     public static final int MAXP_TABLE = 0x6d617870;
-    /** Constant <code>NAME_TABLE=0x6e616d65</code> */
+    /**
+     * Constant <code>NAME_TABLE=0x6e616d65</code>
+     */
     public static final int NAME_TABLE = 0x6e616d65;
-    /** Constant <code>POST_TABLE=0x706f7374</code> */
+    /**
+     * Constant <code>POST_TABLE=0x706f7374</code>
+     */
     public static final int POST_TABLE = 0x706f7374;
-    /** Constant <code>LOCA_TABLE=0x6c6f6361</code> */
+    /**
+     * Constant <code>LOCA_TABLE=0x6c6f6361</code>
+     */
     public static final int LOCA_TABLE = 0x6c6f6361;
     /**
      * This table's tag
@@ -59,43 +80,43 @@ public class TrueTypeTable {
 
     /**
      * Creates a new instance of TrueTypeTable.
-     *
+     * <p>
      * This method is protected.  Use the <code>getTable()</code> methods
      * to get new instances.
      *
      * @param tag the tag for this table
      */
-    protected TrueTypeTable(int tag) {
+    protected TrueTypeTable(final int tag) {
         this.tag = tag;
     }
 
     /**
      * Get a new instance of an empty table by tag string
      *
-     * @param ttf the font that contains this table
+     * @param ttf       the font that contains this table
      * @param tagString the tag for this table, as a 4 character string
-     *        (e.g. head or cmap)
+     *                  (e.g. head or cmap)
      * @return a {@link org.loboevolution.pdfview.font.ttf.TrueTypeTable} object.
      */
-    public static TrueTypeTable createTable(TrueTypeFont ttf,
-            String tagString) {
+    public static TrueTypeTable createTable(final TrueTypeFont ttf,
+                                            final String tagString) {
         return createTable(ttf, tagString, null);
     }
 
     /**
      * Get a new instance of a table with provided data
      *
-     * @param ttf the font that contains this table
+     * @param ttf       the font that contains this table
      * @param tagString the tag for this table, as a 4 character string
-     *        (e.g. head or cmap)
-     * @param data the table data
+     *                  (e.g. head or cmap)
+     * @param data      the table data
      * @return a {@link org.loboevolution.pdfview.font.ttf.TrueTypeTable} object.
      */
-    public static TrueTypeTable createTable(TrueTypeFont ttf,
-            String tagString, ByteBuffer data) {
+    public static TrueTypeTable createTable(final TrueTypeFont ttf,
+                                            final String tagString, final ByteBuffer data) {
         TrueTypeTable outTable = null;
 
-        int tag = stringToTag(tagString);
+        final int tag = stringToTag(tagString);
 
         switch (tag) {
             case CMAP_TABLE: // cmap table
@@ -138,6 +159,38 @@ public class TrueTypeTable {
     }
 
     /**
+     * Get the tag as a string
+     *
+     * @param tag a int.
+     * @return a {@link String} object.
+     */
+    public static String tagToString(final int tag) {
+        final char[] c = new char[4];
+        c[0] = (char) (0xff & (tag >> 24));
+        c[1] = (char) (0xff & (tag >> 16));
+        c[2] = (char) (0xff & (tag >> 8));
+        c[3] = (char) (0xff & (tag));
+
+        return new String(c);
+    }
+
+    /**
+     * Turn a string into a tag
+     *
+     * @param tag a {@link String} object.
+     * @return a int.
+     */
+    public static int stringToTag(final String tag) {
+        final char[] c = tag.toCharArray();
+
+        if (c.length != 4) {
+            throw new IllegalArgumentException("Bad tag length: " + tag);
+        }
+
+        return c[0] << 24 | c[1] << 16 | c[2] << 8 | c[3];
+    }
+
+    /**
      * Get the table's tag
      *
      * @return a int.
@@ -149,7 +202,7 @@ public class TrueTypeTable {
     /**
      * Get the data in the table
      *
-     * @return a {@link java.nio.ByteBuffer} object.
+     * @return a {@link ByteBuffer} object.
      */
     public ByteBuffer getData() {
         return this.data;
@@ -158,9 +211,9 @@ public class TrueTypeTable {
     /**
      * Set the data in the table
      *
-     * @param data a {@link java.nio.ByteBuffer} object.
+     * @param data a {@link ByteBuffer} object.
      */
-    public void setData(ByteBuffer data) {
+    public void setData(final ByteBuffer data) {
         this.data = data;
     }
 
@@ -174,44 +227,12 @@ public class TrueTypeTable {
     }
 
     /**
-     * Get the tag as a string
-     *
-     * @param tag a int.
-     * @return a {@link java.lang.String} object.
+     * {@inheritDoc}
+     * <p>
+     * Put into a nice string
      */
-    public static String tagToString(int tag) {
-        char[] c = new char[4];
-        c[0] = (char) (0xff & (tag >> 24));
-        c[1] = (char) (0xff & (tag >> 16));
-        c[2] = (char) (0xff & (tag >> 8));
-        c[3] = (char) (0xff & (tag));
-
-        return new String(c);
-    }
-
-    /**
-     * Turn a string into a tag
-     *
-     * @param tag a {@link java.lang.String} object.
-     * @return a int.
-     */
-    public static int stringToTag(String tag) {
-        char[] c = tag.toCharArray();
-
-        if (c.length != 4) {
-            throw new IllegalArgumentException("Bad tag length: " + tag);
-        }
-
-        return c[0] << 24 | c[1] << 16 | c[2] << 8 | c[3];
-    }
-
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Put into a nice string
-	 */
     @Override
-	public String toString() {
+    public String toString() {
         String out = "    " + tagToString(getTag()) + " Table.  Data is: ";
         if (getData() == null) {
             out += "not set";

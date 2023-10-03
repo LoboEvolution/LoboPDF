@@ -1,163 +1,225 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.font;
+package main.java.org.loboevolution.pdfview.font;
+
+import org.loboevolution.pdfview.PDFObject;
 
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
-import org.loboevolution.pdfview.PDFObject;
-
 /**
  * <p>PDFFontDescriptor class.</p>
- *
+ * <p>
  * Author  jkaplan
-  *
  */
 public class PDFFontDescriptor {
 
-    /** All glyphs have the same width. */
-    public static final  int FIXED_PITCH = 1 << (1-1);
-    /** Glyphs have serifs. */
-    public static final  int SERIF = 1 << (2-1);
-    /** Font contains glyphs outside the Adobe standard Latin. */
-    public static final  int SYMBOLIC = 1 << (3-1);
-    /** Glyphs resemble cursive handwriting. */
-    public static final  int SCRIPT = 1 << (4-1);
-    /** Font uses the Adobe standard Latic character set. */
-    public static final  int NONSYMBOLIC = 1 << (6-1);
-    /** Glyphs have dominant vertical strokes that are slanted. */
-    public static final  int ITALIC = 1 << (7-1);
-    /** Font contains no lowercase letters. */
-    public static final  int ALLCAP = 1 << (17-1);
-    /** Font contains both uppercase and lowercase letters.. */
-    public static final  int SMALLCAP = 1 << (18-1);
-    /** Determines whether bold glyphs shall be painted with
-     * extra pixels even at very small text sizes. */
-    public static final  int FORCEBOLD = 1 << (19-1);
-    /** Holds value of property ascent. */
+    /**
+     * All glyphs have the same width.
+     */
+    public static final int FIXED_PITCH = 1 << (0);
+    /**
+     * Glyphs have serifs.
+     */
+    public static final int SERIF = 1 << (2 - 1);
+    /**
+     * Font contains glyphs outside the Adobe standard Latin.
+     */
+    public static final int SYMBOLIC = 1 << (3 - 1);
+    /**
+     * Glyphs resemble cursive handwriting.
+     */
+    public static final int SCRIPT = 1 << (4 - 1);
+    /**
+     * Font uses the Adobe standard Latic character set.
+     */
+    public static final int NONSYMBOLIC = 1 << (6 - 1);
+    /**
+     * Glyphs have dominant vertical strokes that are slanted.
+     */
+    public static final int ITALIC = 1 << (7 - 1);
+    /**
+     * Font contains no lowercase letters.
+     */
+    public static final int ALLCAP = 1 << (17 - 1);
+    /**
+     * Font contains both uppercase and lowercase letters..
+     */
+    public static final int SMALLCAP = 1 << (18 - 1);
+    /**
+     * Determines whether bold glyphs shall be painted with
+     * extra pixels even at very small text sizes.
+     */
+    public static final int FORCEBOLD = 1 << (19 - 1);
+    /**
+     * Holds value of property ascent.
+     */
     private int ascent;
-    /** Holds value of property capHeight. */
+    /**
+     * Holds value of property capHeight.
+     */
     private int capHeight;
-    /** Holds value of property descent. */
+    /**
+     * Holds value of property descent.
+     */
     private int descent;
-    /** Holds value of property flags. */
+    /**
+     * Holds value of property flags.
+     */
     private int flags;
-    /** Holds the optional FontFamily (PDF 1.5) */
+    /**
+     * Holds the optional FontFamily (PDF 1.5)
+     */
     private String fontFamily;
-    /** Holds value of property fontName. */
+    /**
+     * Holds value of property fontName.
+     */
     private String fontName;
-    /** Holds the optional FontStretch (PDF 1.5) */
+    /**
+     * Holds the optional FontStretch (PDF 1.5)
+     */
     private String fontStretch;
-    /** Holds the optional FontWeight (PDF 1.5) */
+    /**
+     * Holds the optional FontWeight (PDF 1.5)
+     */
     private int fontWeight;
-    /** Holds value of property italicAngle. */
+    /**
+     * Holds value of property italicAngle.
+     */
     private int italicAngle = 0;
-    /** Holds value of property stemV. */
+    /**
+     * Holds value of property stemV.
+     */
     private int stemV;
-    /** Holds value of property avgWidth. */
+    /**
+     * Holds value of property avgWidth.
+     */
     private int avgWidth = 0;
-    /** Holds value of property fontFile. */
+    /**
+     * Holds value of property fontFile.
+     */
     private PDFObject fontFile;
-    /** Holds value of property fontFile2. */
+    /**
+     * Holds value of property fontFile2.
+     */
     private PDFObject fontFile2;
-    /** Holds value of property fontFile3. */
+    /**
+     * Holds value of property fontFile3.
+     */
     private PDFObject fontFile3;
-    /** Holds value of property leading. */
+    /**
+     * Holds value of property leading.
+     */
     private int leading = 0;
-    /** Holds value of property maxWidth. */
+    /**
+     * Holds value of property maxWidth.
+     */
     private int maxWidth = 0;
-    /** Holds value of property misingWidth. */
+    /**
+     * Holds value of property misingWidth.
+     */
     private int missingWidth = 0;
-    /** Holds value of property stemH. */
+    /**
+     * Holds value of property stemH.
+     */
     private int stemH = 0;
-    /** Holds value of property xHeight. */
+    /**
+     * Holds value of property xHeight.
+     */
     private int xHeight = 0;
-    /** Holds value of property charSet. */
+    /**
+     * Holds value of property charSet.
+     */
     private PDFObject charSet;
-    /** Holds value of property fontBBox. */
+    /**
+     * Holds value of property fontBBox.
+     */
     private Rectangle2D.Float fontBBox;
 
     /**
      * Creates a new instance of PDFFontDescriptor
      *
-     * @param basefont a {@link java.lang.String} object.
+     * @param basefont a {@link String} object.
      */
-    public PDFFontDescriptor(String basefont) {
+    public PDFFontDescriptor(final String basefont) {
         setFontName(basefont);
-    // [[MW TODO: find basefont info and fill in the rest of the
-    // descriptor?]]
+        // [[MW TODO: find basefont info and fill in the rest of the
+        // descriptor?]]
     }
 
     /**
      * Creates a new instance of PDFFontDescriptor
      *
-     * @param obj a {@link org.loboevolution.pdfview.PDFObject} object.
-     * @param fontSubType a {@link java.lang.String} object.
-     * @throws java.io.IOException if any.
+     * @param obj         a {@link org.loboevolution.pdfview.PDFObject} object.
+     * @param fontSubType a {@link String} object.
+     * @throws IOException if any.
      */
-    public PDFFontDescriptor(PDFObject obj, String fontSubType) throws IOException {
+    public PDFFontDescriptor(final PDFObject obj, final String fontSubType) throws IOException {
         // required parameters
         setFlags(obj.getDictRef("Flags").getIntValue());
         PDFObject fontNameObj = obj.getDictRef("FontName");
         if (fontNameObj == null) {
-        	// fallback to avoid NPE try to use the BaseFont
-        	fontNameObj = obj.getDictRef("BaseFont");
+            // fallback to avoid NPE try to use the BaseFont
+            fontNameObj = obj.getDictRef("BaseFont");
         }
         setFontName(fontNameObj.getStringValue());
         setItalicAngle(obj.getDictRef("ItalicAngle").getIntValue());
-        
+
         // conditionally required parameters
-        boolean areConditionalParametersRequired = !"Type3".equals(fontSubType)
+        final boolean areConditionalParametersRequired = !"Type3".equals(fontSubType)
                 && !Boolean.getBoolean("PDFRenderer.lenientFontDescriptorParsing");
-        
-    	// these values are declared as Required except for Type 3 fonts
-    	// however a value might not be available for some fonts and 
-    	// therefore some predefined value is set, so that we have a fallback
-        if ( obj.getDictionary().containsKey("Ascent")) {
+
+        // these values are declared as Required except for Type 3 fonts
+        // however a value might not be available for some fonts and
+        // therefore some predefined value is set, so that we have a fallback
+        if (obj.getDictionary().containsKey("Ascent")) {
             setAscent(obj.getDictRef("Ascent").getIntValue());
+        } else if (areConditionalParametersRequired) {
+            setAscent(728); // value of ArialMT as used with Report Label
         }
-        else if (areConditionalParametersRequired) {
-        	setAscent(728); // value of ArialMT as used with Report Label
-        }
-        if ( obj.getDictionary().containsKey("CapHeight")) {
+        if (obj.getDictionary().containsKey("CapHeight")) {
             setCapHeight(obj.getDictRef("CapHeight").getIntValue());
+        } else if (areConditionalParametersRequired) {
+            setCapHeight(716); // value of ArialMT as used with Report Label
         }
-        else if (areConditionalParametersRequired) {
-        	setCapHeight(716); // value of ArialMT as used with Report Label
-        }
-        if ( obj.getDictionary().containsKey("Descent")) {
+        if (obj.getDictionary().containsKey("Descent")) {
             setDescent(obj.getDictRef("Descent").getIntValue());
+        } else if (areConditionalParametersRequired) {
+            setDescent(-210); // value of ArialMT as used with Report Label
         }
-        else if (areConditionalParametersRequired) {
-        	setDescent(-210); // value of ArialMT as used with Report Label
-        }
-        if ( obj.getDictionary().containsKey("StemV")) {
+        if (obj.getDictionary().containsKey("StemV")) {
             setStemV(obj.getDictRef("StemV").getIntValue());
-        }
-        else if (areConditionalParametersRequired) {
-        	setStemV(109); // "normal" value for vertical stem width (PDFlib)
+        } else if (areConditionalParametersRequired) {
+            setStemV(109); // "normal" value for vertical stem width (PDFlib)
         }
 
         // font bounding box (non-optional but a NPE won't help)
         if (obj.getDictionary().containsKey("FontBBox")) {
-            PDFObject[] bboxdef = obj.getDictRef("FontBBox").getArray();
-            float[] bboxfdef = new float[4];
+            final PDFObject[] bboxdef = obj.getDictRef("FontBBox").getArray();
+            final float[] bboxfdef = new float[4];
             for (int i = 0; i < 4; i++) {
                 bboxfdef[i] = bboxdef[i].getFloatValue();
             }
@@ -222,7 +284,7 @@ public class PDFFontDescriptor {
      *
      * @param ascent New value of property ascent.
      */
-    public void setAscent(int ascent) {
+    public void setAscent(final int ascent) {
         this.ascent = ascent;
     }
 
@@ -240,7 +302,7 @@ public class PDFFontDescriptor {
      *
      * @param capHeight New value of property capHeight.
      */
-    public void setCapHeight(int capHeight) {
+    public void setCapHeight(final int capHeight) {
         this.capHeight = capHeight;
     }
 
@@ -258,7 +320,7 @@ public class PDFFontDescriptor {
      *
      * @param descent New value of property descent.
      */
-    public void setDescent(int descent) {
+    public void setDescent(final int descent) {
         this.descent = descent;
     }
 
@@ -276,7 +338,7 @@ public class PDFFontDescriptor {
      *
      * @param flags New value of property flags.
      */
-    public void setFlags(int flags) {
+    public void setFlags(final int flags) {
         this.flags = flags;
     }
 
@@ -294,7 +356,7 @@ public class PDFFontDescriptor {
      *
      * @param fontFamily New value of property fontFamily.
      */
-    public void setFontFamily(String fontFamily) {
+    public void setFontFamily(final String fontFamily) {
         this.fontFamily = fontFamily;
     }
 
@@ -312,7 +374,7 @@ public class PDFFontDescriptor {
      *
      * @param fontName New value of property fontName.
      */
-    public void setFontName(String fontName) {
+    public void setFontName(final String fontName) {
         this.fontName = fontName;
     }
 
@@ -333,7 +395,7 @@ public class PDFFontDescriptor {
      *
      * @param fontStretch New value of property fontStretch.
      */
-    public void setFontStretch(String fontStretch) {
+    public void setFontStretch(final String fontStretch) {
         this.fontStretch = fontStretch;
     }
 
@@ -353,7 +415,7 @@ public class PDFFontDescriptor {
      *
      * @param fontWeight New value of property fontWeight.
      */
-    public void setFontWeight(int fontWeight) {
+    public void setFontWeight(final int fontWeight) {
         this.fontWeight = fontWeight;
     }
 
@@ -371,7 +433,7 @@ public class PDFFontDescriptor {
      *
      * @param italicAngle New value of property italicAngle.
      */
-    public void setItalicAngle(int italicAngle) {
+    public void setItalicAngle(final int italicAngle) {
         this.italicAngle = italicAngle;
     }
 
@@ -389,7 +451,7 @@ public class PDFFontDescriptor {
      *
      * @param stemV New value of property stemV.
      */
-    public void setStemV(int stemV) {
+    public void setStemV(final int stemV) {
         this.stemV = stemV;
     }
 
@@ -407,7 +469,7 @@ public class PDFFontDescriptor {
      *
      * @param avgWidth New value of property avgWidth.
      */
-    public void setAvgWidth(int avgWidth) {
+    public void setAvgWidth(final int avgWidth) {
         this.avgWidth = avgWidth;
     }
 
@@ -425,7 +487,7 @@ public class PDFFontDescriptor {
      *
      * @param fontFile New value of property fontFile.
      */
-    public void setFontFile(PDFObject fontFile) {
+    public void setFontFile(final PDFObject fontFile) {
         this.fontFile = fontFile;
     }
 
@@ -443,7 +505,7 @@ public class PDFFontDescriptor {
      *
      * @param fontFile2 New value of property fontFile2.
      */
-    public void setFontFile2(PDFObject fontFile2) {
+    public void setFontFile2(final PDFObject fontFile2) {
         this.fontFile2 = fontFile2;
     }
 
@@ -461,7 +523,7 @@ public class PDFFontDescriptor {
      *
      * @param fontFile3 New value of property fontFile3.
      */
-    public void setFontFile3(PDFObject fontFile3) {
+    public void setFontFile3(final PDFObject fontFile3) {
         this.fontFile3 = fontFile3;
     }
 
@@ -479,7 +541,7 @@ public class PDFFontDescriptor {
      *
      * @param leading New value of property leading.
      */
-    public void setLeading(int leading) {
+    public void setLeading(final int leading) {
         this.leading = leading;
     }
 
@@ -497,7 +559,7 @@ public class PDFFontDescriptor {
      *
      * @param maxWidth New value of property maxWidth.
      */
-    public void setMaxWidth(int maxWidth) {
+    public void setMaxWidth(final int maxWidth) {
         this.maxWidth = maxWidth;
     }
 
@@ -515,7 +577,7 @@ public class PDFFontDescriptor {
      *
      * @param missingWidth New value of property misingWidth.
      */
-    public void setMissingWidth(int missingWidth) {
+    public void setMissingWidth(final int missingWidth) {
         this.missingWidth = missingWidth;
     }
 
@@ -533,7 +595,7 @@ public class PDFFontDescriptor {
      *
      * @param stemH New value of property stemH.
      */
-    public void setStemH(int stemH) {
+    public void setStemH(final int stemH) {
         this.stemH = stemH;
     }
 
@@ -551,7 +613,7 @@ public class PDFFontDescriptor {
      *
      * @param xHeight New value of property xHeight.
      */
-    public void setXHeight(int xHeight) {
+    public void setXHeight(final int xHeight) {
         this.xHeight = xHeight;
     }
 
@@ -569,7 +631,7 @@ public class PDFFontDescriptor {
      *
      * @param charSet New value of property charSet.
      */
-    public void setCharSet(PDFObject charSet) {
+    public void setCharSet(final PDFObject charSet) {
         this.charSet = charSet;
     }
 
@@ -587,7 +649,7 @@ public class PDFFontDescriptor {
      *
      * @param fontBBox New value of property fontBBox.
      */
-    public void setFontBBox(Rectangle2D.Float fontBBox) {
+    public void setFontBBox(final Rectangle2D.Float fontBBox) {
         this.fontBBox = fontBBox;
     }
 }

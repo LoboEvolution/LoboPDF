@@ -1,23 +1,30 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.decode;
+package main.java.org.loboevolution.pdfview.decode;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -26,44 +33,40 @@ import java.util.List;
 
 /**
  * Undo prediction based on the PNG algorithm.
- *
-  *
-  *
  */
 public class PNGPredictor extends Predictor {
     /**
      * Creates a new instance of PNGPredictor
      */
     public PNGPredictor() {
-        super (PNG);
+        super(PNG);
     }
-    
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Undo data based on the png algorithm
-	 */
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Undo data based on the png algorithm
+     */
     @Override
-	public ByteBuffer unpredict(ByteBuffer imageData)
-        throws IOException
-    {
-        List<byte[]> rows = new ArrayList<>();
-        
+    public ByteBuffer unpredict(final ByteBuffer imageData)
+            throws IOException {
+        final List<byte[]> rows = new ArrayList<>();
+
         byte[] curLine = null;
         byte[] prevLine = null;
-        
+
         // get the number of bytes per row
         int rowSize = getColumns() * getColors() * getBitsPerComponent();
         rowSize = (int) Math.ceil(rowSize / 8.0);
-        
-        while(imageData.remaining() >= rowSize + 1) {
+
+        while (imageData.remaining() >= rowSize + 1) {
             // the first byte determines the algorithm
-            int algorithm = (imageData.get() & 0xff);
-            
+            final int algorithm = (imageData.get() & 0xff);
+
             // read the rest of the line
             curLine = new byte[rowSize];
             imageData.get(curLine);
-            
+
             // use the algorithm, Luke
             switch (algorithm) {
                 case 0:
@@ -82,146 +85,146 @@ public class PNGPredictor extends Predictor {
                     doPaethLine(curLine, prevLine);
                     break;
                 default:
-        			break;
+                    break;
             }
-            
+
             rows.add(curLine);
             prevLine = curLine;
         }
-        
+
         // turn into byte array
-        ByteBuffer outBuf = ByteBuffer.allocate(rows.size() * rowSize);
-        for (byte[] b : rows) {
+        final ByteBuffer outBuf = ByteBuffer.allocate(rows.size() * rowSize);
+        for (final byte[] b : rows) {
             outBuf.put(b);
         }
-        
+
         // reset start pointer
         outBuf.flip();
-        
+
         // return
         return outBuf;
-        
+
     }
-    
+
     /**
      * Return the value of the Sub algorithm on the line (compare bytes to
      * the previous byte of the same color on this line).
      *
      * @param curLine an array of {@link byte} objects.
      */
-    protected void doSubLine(byte[] curLine) {
+    protected void doSubLine(final byte[] curLine) {
         // get the number of bytes per sample
-        int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0); 
-        
+        final int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0);
+
         for (int i = 0; i < curLine.length; i++) {
-            int prevIdx = i - sub;
+            final int prevIdx = i - sub;
             if (prevIdx >= 0) {
                 curLine[i] += curLine[prevIdx];
             }
         }
     }
-    
+
     /**
      * Return the value of the up algorithm on the line (compare bytes to
      * the same byte in the previous line)
      *
-     * @param curLine an array of {@link byte} objects.
+     * @param curLine  an array of {@link byte} objects.
      * @param prevLine an array of {@link byte} objects.
      */
-    protected void doUpLine(byte[] curLine, byte[] prevLine) {
+    protected void doUpLine(final byte[] curLine, final byte[] prevLine) {
         if (prevLine == null) {
             // do nothing if this is the first line
             return;
         }
-        
+
         for (int i = 0; i < curLine.length; i++) {
             curLine[i] += prevLine[i];
         }
     }
-    
+
     /**
      * Return the value of the average algorithm on the line (compare
      * bytes to the average of the previous byte of the same color and
      * the same byte on the previous line)
      *
-     * @param curLine an array of {@link byte} objects.
+     * @param curLine  an array of {@link byte} objects.
      * @param prevLine an array of {@link byte} objects.
      */
-    protected void doAverageLine(byte[] curLine, byte[] prevLine) {
-         // get the number of bytes per sample
-        int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0); 
-        
+    protected void doAverageLine(final byte[] curLine, final byte[] prevLine) {
+        // get the number of bytes per sample
+        final int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0);
+
         for (int i = 0; i < curLine.length; i++) {
             int raw = 0;
             int prior = 0;
-            
+
             // get the last value of this color
-            int prevIdx = i - sub;
+            final int prevIdx = i - sub;
             if (prevIdx >= 0) {
                 raw = curLine[prevIdx] & 0xff;
             }
-            
+
             // get the value on the previous line
             if (prevLine != null) {
                 prior = prevLine[i] & 0xff;
             }
-            
+
             // add the average
-            curLine[i] += (byte) Math.floor((raw + prior) / 2);
-        }      
+            curLine[i] += (byte) (double) ((raw + prior) / 2);
+        }
     }
-    
+
     /**
      * Return the value of the average algorithm on the line (compare
      * bytes to the average of the previous byte of the same color and
      * the same byte on the previous line)
      *
-     * @param curLine an array of {@link byte} objects.
+     * @param curLine  an array of {@link byte} objects.
      * @param prevLine an array of {@link byte} objects.
      */
-    protected void doPaethLine(byte[] curLine, byte[] prevLine) {
-         // get the number of bytes per sample
-        int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0); 
-        
+    protected void doPaethLine(final byte[] curLine, final byte[] prevLine) {
+        // get the number of bytes per sample
+        final int sub = (int) Math.ceil((getBitsPerComponent() * getColors()) / 8.0);
+
         for (int i = 0; i < curLine.length; i++) {
             int left = 0;
             int up = 0;
             int upLeft = 0;
-            
+
             // get the last value of this color
-            int prevIdx = i - sub;
+            final int prevIdx = i - sub;
             if (prevIdx >= 0) {
                 left = curLine[prevIdx] & 0xff;
             }
-            
+
             // get the value on the previous line
             if (prevLine != null) {
                 up = prevLine[i] & 0xff;
             }
-            
+
             if (prevIdx >= 0 && prevLine != null) {
                 upLeft = prevLine[prevIdx] & 0xff;
             }
-            
+
             // add the average
             curLine[i] += (byte) paeth(left, up, upLeft);
-        }      
+        }
     }
-    
+
     /**
      * The paeth algorithm
      *
-     * @param left a int.
-     * @param up a int.
+     * @param left   a int.
+     * @param up     a int.
      * @param upLeft a int.
      * @return a int.
      */
-    protected int paeth(int left, int up, int upLeft) {
-        int p = left + up - upLeft;
-        int pa = Math.abs(p - left);
-        int pb = Math.abs(p - up);
-        int pc = Math.abs(p - upLeft);
-        
+    protected int paeth(final int left, final int up, final int upLeft) {
+        final int p = left + up - upLeft;
+        final int pa = Math.abs(p - left);
+        final int pb = Math.abs(p - up);
+        final int pc = Math.abs(p - upLeft);
+
         if ((pa <= pb) && (pa <= pc)) {
             return left;
         } else if (pb <= pc) {
@@ -230,5 +233,5 @@ public class PNGPredictor extends Predictor {
             return upLeft;
         }
     }
-    
+
 }

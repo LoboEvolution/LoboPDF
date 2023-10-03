@@ -1,30 +1,38 @@
-/* Copyright 2008 Pirion Systems Pty Ltd, 139 Warry St,
- * Fortitude Valley, Queensland, Australia
+/*
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.decrypt;
+package main.java.org.loboevolution.pdfview.decrypt;
+
+import org.loboevolution.pdfview.PDFObject;
+import org.loboevolution.pdfview.PDFParseException;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.loboevolution.pdfview.PDFObject;
-import org.loboevolution.pdfview.PDFParseException;
 
 /**
  * Produces a {@link org.loboevolution.pdfview.decrypt.PDFDecrypter} for documents given a (possibly non-existent)
@@ -33,17 +41,20 @@ import org.loboevolution.pdfview.PDFParseException;
  * 1.7. This means that it supports RC4 and AES encryption with keys of
  * 40-128 bits; esentially, password-protected documents with compatibility
  * up to Acrobat 8.
- *
+ * <p>
  * See "PDF Reference version 1.7, section 3.5: Encryption"
  * Author Luke Kirby
-  *
  */
 public class PDFDecrypterFactory {
 
-    /** The name of the standard Identity CryptFilter */
+    /**
+     * The name of the standard Identity CryptFilter
+     */
     public static final String CF_IDENTITY = "Identity";
 
-    /** Default key length for versions where key length is optional */
+    /**
+     * Default key length for versions where key length is optional
+     */
     private static final int DEFAULT_KEY_LENGTH = 40;
 
     /**
@@ -52,20 +63,20 @@ public class PDFDecrypterFactory {
      * described by the encryption specification.
      *
      * @param encryptDict the Encrypt dict as found in the document's trailer.
-     *  May be null, in which case the {@link org.loboevolution.pdfview.decrypt.IdentityDecrypter} will
-     *  be returned.
-     * @param documentId the object with key "ID" in the trailer's dictionary.
-     *  Should always be present if Encrypt is.
-     * @param password the password to use; may be <code>null</code>
+     *                    May be null, in which case the {@link org.loboevolution.pdfview.decrypt.IdentityDecrypter} will
+     *                    be returned.
+     * @param documentId  the object with key "ID" in the trailer's dictionary.
+     *                    Should always be present if Encrypt is.
+     * @param password    the password to use; may be <code>null</code>
      * @return The decryptor that should be used for all encrypted data in the
-     *  PDF
-     * @throws java.io.IOException if any.
+     * PDF
+     * @throws IOException                                                        if any.
      * @throws org.loboevolution.pdfview.decrypt.EncryptionUnsupportedByPlatformException if any.
-     * @throws org.loboevolution.pdfview.decrypt.EncryptionUnsupportedByProductException if any.
-     * @throws org.loboevolution.pdfview.decrypt.PDFAuthenticationFailureException if any.
+     * @throws org.loboevolution.pdfview.decrypt.EncryptionUnsupportedByProductException  if any.
+     * @throws org.loboevolution.pdfview.decrypt.PDFAuthenticationFailureException        if any.
      */
     public static PDFDecrypter createDecryptor
-            (PDFObject encryptDict, PDFObject documentId, PDFPassword password)
+    (final PDFObject encryptDict, final PDFObject documentId, PDFPassword password)
             throws
             IOException,
             EncryptionUnsupportedByPlatformException,
@@ -79,12 +90,12 @@ public class PDFDecrypterFactory {
             // No encryption specified
             return IdentityDecrypter.getInstance();
         } else {
-            PDFObject filter = encryptDict.getDictRef("Filter");
+            final PDFObject filter = encryptDict.getDictRef("Filter");
             // this means that we'll fail if, for example, public key
             // encryption is employed
             if (filter != null && "Standard".equals(filter.getStringValue())) {
                 final PDFObject vObj = encryptDict.getDictRef("V");
-                int v = vObj != null ? vObj.getIntValue() : 0;
+                final int v = vObj != null ? vObj.getIntValue() : 0;
                 if (v == 1 || v == 2) {
                     final PDFObject lengthObj =
                             encryptDict.getDictRef("Length");
@@ -116,26 +127,26 @@ public class PDFDecrypterFactory {
      * version 4 encryption
      *
      * @param encryptDict the Encrypt dictionary
-     * @param documentId the document ID
-     * @param password the provided password
-     * @param v the version of encryption being used; must be at least 4
+     * @param documentId  the document ID
+     * @param password    the provided password
+     * @param v           the version of encryption being used; must be at least 4
      * @return the decrypter corresponding to the scheme expressed in
      * encryptDict
-     * @throws PDFAuthenticationFailureException if the provided password
-     *  does not decrypt this document
-     * @throws IOException if there is a problem reading the PDF, an invalid
-     *  document structure, or an inability to obtain the required ciphers
-     *  from the platform's JCE
+     * @throws PDFAuthenticationFailureException        if the provided password
+     *                                                  does not decrypt this document
+     * @throws IOException                              if there is a problem reading the PDF, an invalid
+     *                                                  document structure, or an inability to obtain the required ciphers
+     *                                                  from the platform's JCE
      * @throws EncryptionUnsupportedByPlatformException if the encryption
-     *  is not supported by the environment in which the code is executing
-     * @throws EncryptionUnsupportedByProductException if PDFRenderer does
-     *  not currently support the specified encryption
+     *                                                  is not supported by the environment in which the code is executing
+     * @throws EncryptionUnsupportedByProductException  if PDFRenderer does
+     *                                                  not currently support the specified encryption
      */
     private static PDFDecrypter createCryptFilterDecrypter(
-            PDFObject encryptDict,
-            PDFObject documentId,
-            PDFPassword password,
-            int v)
+            final PDFObject encryptDict,
+            final PDFObject documentId,
+            final PDFPassword password,
+            final int v)
             throws
             PDFAuthenticationFailureException,
             IOException,
@@ -143,7 +154,7 @@ public class PDFDecrypterFactory {
             EncryptionUnsupportedByProductException {
 
         assert v >= 4 : "crypt filter decrypter not supported for " +
-                        "standard encryption prior to version 4";
+                "standard encryption prior to version 4";
 
         // encryptMetadata is true if not present. Note that we don't actually
         // use this to change our reading of metadata streams (that's all done
@@ -156,8 +167,8 @@ public class PDFDecrypterFactory {
                 && encryptMetadataObj.getType() == PDFObject.BOOLEAN) {
             encryptMetadata = encryptMetadataObj.getBooleanValue();
         }
-        
-        final PDFObject bitLengthObj = encryptDict.getDictRef("Length");        
+
+        final PDFObject bitLengthObj = encryptDict.getDictRef("Length");
 
         // Assemble decrypters for each filter in the
         // crypt filter (CF) dictionary
@@ -176,8 +187,8 @@ public class PDFDecrypterFactory {
             final PDFObject lengthObj = cryptFilter.getDictRef("Length");
             // The Errata for PDF 1.7 explains that the value of
             // Length in CF dictionaries is in bytes
-            final Integer length = lengthObj != null ? lengthObj.getIntValue() * 8 : 
-                    	(bitLengthObj != null) ? bitLengthObj.getIntValue() : null;
+            final Integer length = lengthObj != null ? lengthObj.getIntValue() * 8 :
+                    (bitLengthObj != null) ? bitLengthObj.getIntValue() : null;
 
             // CFM is the crypt filter method, describing whether RC4,
             // AES, or None (i.e., identity) is the encryption mechanism
@@ -209,11 +220,11 @@ public class PDFDecrypterFactory {
         // Identity filter sneakily declared in the CF entry
         cfDecrypters.put(CF_IDENTITY, IdentityDecrypter.getInstance());
 
-        PDFObject stmFObj = encryptDict.getDictRef("StmF");
+        final PDFObject stmFObj = encryptDict.getDictRef("StmF");
         final String defaultStreamFilter =
                 stmFObj != null ? stmFObj.getStringValue() : CF_IDENTITY;
 
-        PDFObject strFObj = encryptDict.getDictRef("StrF");
+        final PDFObject strFObj = encryptDict.getDictRef("StrF");
         final String defaultStringFilter =
                 strFObj != null ? strFObj.getStringValue() : CF_IDENTITY;
 
@@ -229,31 +240,30 @@ public class PDFDecrypterFactory {
      * be specified via a CF entry (e.g. key length), the value is specified as
      * a parameter.
      *
-     * @param encryptDict the Encrypt dictionary
-     * @param documentId the document ID
-     * @param password the password
-     * @param keyLength the key length, in bits; may be <code>null</code>
-     *  to use a {@link #DEFAULT_KEY_LENGTH default}
-     * @param encryptMetadata whether metadata is being encrypted
+     * @param encryptDict          the Encrypt dictionary
+     * @param documentId           the document ID
+     * @param password             the password
+     * @param keyLength            the key length, in bits; may be <code>null</code>
+     *                             to use a {@link #DEFAULT_KEY_LENGTH default}
+     * @param encryptMetadata      whether metadata is being encrypted
      * @param encryptionAlgorithm, the encryption algorithm
      * @return the decrypter
-     * @throws PDFAuthenticationFailureException if the provided password
-     *  is not the one expressed by the encryption dictionary
-     * @throws IOException if there is a problem reading the PDF content,
-     *  if the content does not comply with the PDF specification
+     * @throws PDFAuthenticationFailureException        if the provided password
+     *                                                  is not the one expressed by the encryption dictionary
+     * @throws IOException                              if there is a problem reading the PDF content,
+     *                                                  if the content does not comply with the PDF specification
      * @throws EncryptionUnsupportedByPlatformException if the encryption
-     *  is not supported by the environment in which the code is executing
-     * @throws EncryptionUnsupportedByProductException if PDFRenderer does
-     *  not currently support the specified encryption
-     *
+     *                                                  is not supported by the environment in which the code is executing
+     * @throws EncryptionUnsupportedByProductException  if PDFRenderer does
+     *                                                  not currently support the specified encryption
      */
     private static PDFDecrypter createStandardDecrypter(
-            PDFObject encryptDict,
-            PDFObject documentId,
-            PDFPassword password,
+            final PDFObject encryptDict,
+            final PDFObject documentId,
+            final PDFPassword password,
             Integer keyLength,
-            boolean encryptMetadata,
-            StandardDecrypter.EncryptionAlgorithm encryptionAlgorithm)
+            final boolean encryptMetadata,
+            final StandardDecrypter.EncryptionAlgorithm encryptionAlgorithm)
             throws
             PDFAuthenticationFailureException,
             IOException,
@@ -320,12 +330,12 @@ public class PDFDecrypterFactory {
      * @param encryptDict the Encrypt dict as found in the document's trailer.
      * @return true if the Filter exist in the current dictionary
      */
-    public static boolean isFilterExist(PDFObject encryptDict) {
+    public static boolean isFilterExist(final PDFObject encryptDict) {
         if (encryptDict != null) {
             try {
-                PDFObject filter = encryptDict.getDictRef("Filter");
+                final PDFObject filter = encryptDict.getDictRef("Filter");
                 return filter != null;
-            } catch (IOException e) {
+            } catch (final IOException e) {
             }
         }
         return false;

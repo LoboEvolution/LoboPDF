@@ -1,33 +1,29 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.font;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
+package main.java.org.loboevolution.pdfview.font;
 
 import org.loboevolution.pdfview.BaseWatchable;
 import org.loboevolution.pdfview.PDFDebugger;
@@ -36,31 +32,59 @@ import org.loboevolution.pdfview.PDFParseException;
 import org.loboevolution.pdfview.font.cid.PDFCMap;
 import org.loboevolution.pdfview.font.ttf.TrueTypeFont;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.*;
+import java.util.regex.Pattern;
+
 /**
  * a Font definition for PDF files
  * Author Mike Wessler
-  *
  */
 public abstract class PDFFont {
 
     private static final FilenameFilter TTF_FILTER = (dir, name) -> name.toLowerCase().endsWith(".ttf");
 
-    private static Map<String,File> namedFontsToLocalTtfFiles = null;
+    private static Map<String, File> namedFontsToLocalTtfFiles = null;
 
-    /** the font SubType of this font */
+    /**
+     * the font SubType of this font
+     */
     private String subtype;
-    /** the postscript name of this font */
+    /**
+     * the postscript name of this font
+     */
     private String baseFont;
-    /** the font encoding (maps character ids to glyphs) */
+    /**
+     * the font encoding (maps character ids to glyphs)
+     */
     private PDFFontEncoding encoding;
-    /** the font descriptor */
+    /**
+     * the font descriptor
+     */
     private PDFFontDescriptor descriptor;
-    /** the CMap that maps this font to unicode values */
+    /**
+     * the CMap that maps this font to unicode values
+     */
     private PDFCMap unicodeMap;
-    /** a cache of glyphs indexed by character */
-    private Map<Character,PDFGlyph> charCache;
+    /**
+     * a cache of glyphs indexed by character
+     */
+    private Map<Character, PDFGlyph> charCache;
 
 
+    /**
+     * Create a PDFFont given the base font name and the font descriptor
+     *
+     * @param baseFont   the postscript name of this font
+     * @param descriptor the descriptor for the font
+     */
+    protected PDFFont(final String baseFont, final PDFFontDescriptor descriptor) {
+        setBaseFont(baseFont);
+        setDescriptor(descriptor);
+    }
 
     /**
      * get the PDFFont corresponding to the font described in a PDFObject.
@@ -83,13 +107,13 @@ public abstract class PDFFont {
      * CharProcs = (dictionary)
      * Resources = (dictionary)
      *
-     * @param obj a {@link org.loboevolution.pdfview.PDFObject} object.
-     * @param resources a {@link java.util.HashMap} object.
+     * @param obj       a {@link org.loboevolution.pdfview.PDFObject} object.
+     * @param resources a {@link HashMap} object.
      * @return a {@link org.loboevolution.pdfview.font.PDFFont} object.
-     * @throws java.io.IOException if any.
+     * @throws IOException if any.
      */
-    public synchronized static PDFFont getFont(PDFObject obj,
-            HashMap<String,PDFObject> resources)
+    public synchronized static PDFFont getFont(final PDFObject obj,
+                                               final HashMap<String, PDFObject> resources)
             throws IOException {
         PDFFont font = (PDFFont) obj.getCache();
         if (font != null) {
@@ -105,8 +129,8 @@ public abstract class PDFFont {
             subType = obj.getDictRef("S").getStringValue();
         }
         PDFObject baseFontObj = obj.getDictRef("BaseFont");
-        PDFObject encodingObj = obj.getDictRef("Encoding");
-        PDFObject descObj = obj.getDictRef("FontDescriptor");
+        final PDFObject encodingObj = obj.getDictRef("Encoding");
+        final PDFObject descObj = obj.getDictRef("FontDescriptor");
 
         if (baseFontObj != null) {
             baseFont = baseFontObj.getStringValue();
@@ -153,7 +177,7 @@ public abstract class PDFFont {
                     // load a TrueType font
                     try {
                         font = new TTFFont(baseFont, obj, descriptor);
-                    } catch (Exception e) {
+                    } catch (final Exception e) {
 //            		PDFRenderer.getErrorHandler().publishException(e);
                         PDFDebugger.debug("Error parsing font : " + baseFont);
                         // fake it with a built-in font
@@ -164,7 +188,7 @@ public abstract class PDFFont {
                     if (extFontFile != null) {
                         try {
                             font = new TTFFont(baseFont, obj, descriptor, extFontFile);
-                        } catch (Exception e) {
+                        } catch (final Exception e) {
 //                		PDFRenderer.getErrorHandler().publishException(e);
                             PDFDebugger.debug("Error parsing font : " + baseFont);
                             // fake it with a built-in font
@@ -206,7 +230,7 @@ public abstract class PDFFont {
         return font;
     }
 
-    private static File findExternalTtf(String fontName) {
+    private static File findExternalTtf(final String fontName) {
         ensureNamedTtfFontFiles();
         return namedFontsToLocalTtfFiles.get(fontName);
     }
@@ -226,20 +250,20 @@ public abstract class PDFFont {
                     for (final File ttfFile : fontDir.listFiles(TTF_FILTER)) {
                         if (ttfFile.canRead()) {
                             try {
-                                byte[] fontBytes;
-                                try (RandomAccessFile fontRa = new RandomAccessFile(ttfFile, "r")) {
-                                    int size = (int) fontRa.length();
+                                final byte[] fontBytes;
+                                try (final RandomAccessFile fontRa = new RandomAccessFile(ttfFile, "r")) {
+                                    final int size = (int) fontRa.length();
                                     fontBytes = new byte[size];
                                     fontRa.readFully(fontBytes);
                                 }
 
-                                TrueTypeFont ttf = TrueTypeFont.parseFont(fontBytes);
+                                final TrueTypeFont ttf = TrueTypeFont.parseFont(fontBytes);
                                 for (final String fontName : ttf.getNames()) {
                                     if (!namedFontsToLocalTtfFiles.containsKey(fontName)) {
                                         namedFontsToLocalTtfFiles.put(fontName, ttfFile);
                                     }
                                 }
-                            } catch (Throwable t) {
+                            } catch (final Throwable t) {
                                 // I'm not sure how much confidence we should have
                                 // in the font parsing, so we'll avoid relying on
                                 // this not to fail
@@ -255,7 +279,7 @@ public abstract class PDFFont {
     }
 
     private static String[] getFontSearchPath() {
-        String pathProperty = System.getProperty("PDFRenderer.fontSearchPath");
+        final String pathProperty = System.getProperty("PDFRenderer.fontSearchPath");
         if (pathProperty != null) {
             return pathProperty.split(Pattern.quote(File.pathSeparator));
         } else {
@@ -263,13 +287,11 @@ public abstract class PDFFont {
         }
     }
 
-
-    private static String[] getDefaultFontSearchPath()
-    {
+    private static String[] getDefaultFontSearchPath() {
         String osName = null;
         try {
             osName = System.getProperty("os.name");
-        } catch (SecurityException e) {
+        } catch (final SecurityException e) {
             // preserve null osName
         }
 
@@ -283,16 +305,16 @@ public abstract class PDFFont {
             // start with some reasonable default
             String path = "C:/WINDOWS/Fonts";
             try {
-                String windir = System.getenv("WINDIR");
+                final String windir = System.getenv("WINDIR");
                 if (windir != null) {
                     path = windir + "/Fonts/";
                 }
-            } catch (SecurityException secEx) {
+            } catch (final SecurityException secEx) {
                 // drop through and accept default path
             }
-            return new String[] { path };
+            return new String[]{path};
         } else if (osName != null && osName.startsWith("mac")) {
-            List<String> paths = new ArrayList<>(Arrays.asList(
+            final List<String> paths = new ArrayList<>(Arrays.asList(
                     "/Library/Fonts",
                     "/Network/Library/Fonts",
                     "/System/Library/Fonts",
@@ -300,7 +322,7 @@ public abstract class PDFFont {
             // try and add the user font dir at the front
             try {
                 paths.add(0, System.getProperty("user.home") + "/Library/Fonts");
-            } catch (SecurityException e) {
+            } catch (final SecurityException e) {
                 // I suppose we just won't use the user fonts
             }
             return paths.toArray(new String[0]);
@@ -323,9 +345,9 @@ public abstract class PDFFont {
     /**
      * Set the font subtype
      *
-     * @param subtype a {@link java.lang.String} object.
+     * @param subtype a {@link String} object.
      */
-    public void setSubtype(String subtype) {
+    public void setSubtype(final String subtype) {
         this.subtype = subtype;
     }
 
@@ -343,7 +365,7 @@ public abstract class PDFFont {
      *
      * @param baseFont the postscript name of the font
      */
-    public void setBaseFont(String baseFont) {
+    public void setBaseFont(final String baseFont) {
         this.baseFont = baseFont;
     }
 
@@ -361,7 +383,7 @@ public abstract class PDFFont {
      *
      * @param encoding a {@link org.loboevolution.pdfview.font.PDFFontEncoding} object.
      */
-    public void setEncoding(PDFFontEncoding encoding) {
+    public void setEncoding(final PDFFontEncoding encoding) {
         this.encoding = encoding;
     }
 
@@ -379,7 +401,7 @@ public abstract class PDFFont {
      *
      * @param descriptor a {@link org.loboevolution.pdfview.font.PDFFontDescriptor} object.
      */
-    public void setDescriptor(PDFFontDescriptor descriptor) {
+    public void setDescriptor(final PDFFontDescriptor descriptor) {
         this.descriptor = descriptor;
     }
 
@@ -397,7 +419,7 @@ public abstract class PDFFont {
      *
      * @param unicodeMap a {@link org.loboevolution.pdfview.font.cid.PDFCMap} object.
      */
-    public void setUnicodeMap(PDFCMap unicodeMap) {
+    public void setUnicodeMap(final PDFCMap unicodeMap) {
         this.unicodeMap = unicodeMap;
     }
 
@@ -405,9 +427,9 @@ public abstract class PDFFont {
      * Get the glyphs associated with a given String in this font
      *
      * @param text the text to translate into glyphs
-     * @return a {@link java.util.List} object.
+     * @return a {@link List} object.
      */
-    public List<PDFGlyph> getGlyphs(String text) {
+    public List<PDFGlyph> getGlyphs(final String text) {
         List<PDFGlyph> outList = null;
 
         // if we have an encoding, use it to get the commands
@@ -416,11 +438,11 @@ public abstract class PDFFont {
             outList = this.encoding.getGlyphs(this, text);
         } else {
             // use the default mapping
-            char[] arry = text.toCharArray();
+            final char[] arry = text.toCharArray();
             outList = new ArrayList<>(arry.length);
-            for (char c : arry) {
+            for (final char c : arry) {
                 // only look at 2 bytes when there is no encoding
-                char src = (char) (c & 0xff);
+                final char src = (char) (c & 0xff);
                 outList.add(getCachedGlyph(src, null));
             }
         }
@@ -432,11 +454,11 @@ public abstract class PDFFont {
      * Get a glyph for a given character code.  The glyph is returned
      * from the cache if available, or added to the cache if not
      *
-     * @param src the character code of this glyph
+     * @param src  the character code of this glyph
      * @param name the name of the glyph, or null if the name is unknown
      * @return a glyph for this character
      */
-    public PDFGlyph getCachedGlyph(char src, String name) {
+    public PDFGlyph getCachedGlyph(final char src, final String name) {
         if (this.charCache == null) {
             this.charCache = new HashMap<>();
         }
@@ -454,35 +476,24 @@ public abstract class PDFFont {
     }
 
     /**
-     * Create a PDFFont given the base font name and the font descriptor
-     *
-     * @param baseFont the postscript name of this font
-     * @param descriptor the descriptor for the font
-     */
-    protected PDFFont(String baseFont, PDFFontDescriptor descriptor) {
-        setBaseFont(baseFont);
-        setDescriptor(descriptor);
-    }
-
-    /**
      * Get the glyph for a given character code and name
-     *
+     * <p>
      * The preferred method of getting the glyph should be by name.  If the
      * name is null or not valid, then the character code should be used.
      * If the both the code and the name are invalid, the undefined glyph
      * should be returned.
-     *
+     * <p>
      * Note this method must *always* return a glyph.
      *
-     * @param src the character code of this glyph
+     * @param src  the character code of this glyph
      * @param name the name of this glyph or null if unknown
      * @return a glyph for this character
      */
-    protected abstract PDFGlyph getGlyph(char src, String name);
+    protected abstract PDFGlyph getGlyph(char src, final String name);
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Turn this font into a pretty String
      */
     @Override
@@ -492,11 +503,11 @@ public abstract class PDFFont {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Compare two fonts base on the baseFont
      */
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (!(o instanceof PDFFont)) {
             return false;
         }
@@ -506,7 +517,7 @@ public abstract class PDFFont {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Hash a font based on its base font
      */
     @Override

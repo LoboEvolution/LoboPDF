@@ -1,22 +1,32 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.decode;
+package main.java.org.loboevolution.pdfview.decode;
+
+import org.loboevolution.pdfview.PDFObject;
+import org.loboevolution.pdfview.PDFParseException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,14 +34,10 @@ import java.nio.ByteBuffer;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
-import org.loboevolution.pdfview.PDFObject;
-import org.loboevolution.pdfview.PDFParseException;
-
 /**
  * decode a deFlated byte array
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
 public class FlateDecode {
 
@@ -41,21 +47,21 @@ public class FlateDecode {
      * Flate is a built-in Java algorithm.  It's part of the java.util.zip
      * package.
      *
-     * @param buf the deflated input buffer
+     * @param buf    the deflated input buffer
      * @param params parameters to the decoder (unused)
+     * @param dict   a {@link org.loboevolution.pdfview.PDFObject} object.
      * @return the decoded (inflated) bytes
-     * @param dict a {@link org.loboevolution.pdfview.PDFObject} object.
-     * @throws java.io.IOException if any.
+     * @throws IOException if any.
      */
-    public static ByteBuffer decode(PDFObject dict, ByteBuffer buf,
-            PDFObject params) throws IOException {
-        Inflater inf = new Inflater(false);
+    public static ByteBuffer decode(final PDFObject dict, final ByteBuffer buf,
+                                    final PDFObject params) throws IOException {
+        final Inflater inf = new Inflater(false);
 
-        int bufSize = buf.remaining();
+        final int bufSize = buf.remaining();
 
         // copy the data, since the array() method is not supported
         // on raf-based ByteBuffers
-        byte[] data = new byte[bufSize];
+        final byte[] data = new byte[bufSize];
         buf.get(data);
 
         // set the input to the inflater
@@ -63,24 +69,24 @@ public class FlateDecode {
 
         // output to a byte-array output stream, since we don't
         // know how big the output will be
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] decomp = new byte[bufSize];
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final byte[] decomp = new byte[bufSize];
         int read = 0;
 
-        try {        	
+        try {
             while (!inf.finished()) {
                 read = inf.inflate(decomp);
                 if (read <= 0) {
-                    if (inf.needsDictionary()) {                    	
+                    if (inf.needsDictionary()) {
                         throw new PDFParseException("Don't know how to ask for a dictionary in FlateDecode");
                     } else {
-                       	// just return the data which is already read
-                       	break;
+                        // just return the data which is already read
+                        break;
                     }
                 }
                 baos.write(decomp, 0, read);
             }
-        } catch (DataFormatException dfe) {
+        } catch (final DataFormatException dfe) {
             throw new PDFParseException("Data format exception:" + dfe.getMessage());
         }
 
@@ -89,7 +95,7 @@ public class FlateDecode {
 
         // undo a predictor algorithm, if any was used
         if (params != null && params.getDictionary().containsKey("Predictor")) {
-            Predictor predictor = Predictor.getPredictor(params);
+            final Predictor predictor = Predictor.getPredictor(params);
             if (predictor != null) {
                 outBytes = predictor.unpredict(outBytes);
             }

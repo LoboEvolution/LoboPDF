@@ -1,121 +1,130 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.function;
-
-import java.io.IOException;
+package main.java.org.loboevolution.pdfview.function;
 
 import org.loboevolution.pdfview.PDFObject;
 import org.loboevolution.pdfview.PDFParseException;
+
+import java.io.IOException;
 
 /**
  * A type 2 function is an exponential interpolation function, which maps
  * from one input value to n output values using a simple exponential
  * formula.
- *
-  *
-  *
  */
 public class FunctionType2 extends PDFFunction {
-    /** the function's value at zero for the n outputs */
-    private float[] c0 = new float[] { 0f };
-    
-    /** the function's value at one for the n outputs */
-    private float[] c1 = new float[] { 1f };
-    
-    /** the exponent */
+    /**
+     * the function's value at zero for the n outputs
+     */
+    private float[] c0 = new float[]{0f};
+
+    /**
+     * the function's value at one for the n outputs
+     */
+    private float[] c1 = new float[]{1f};
+
+    /**
+     * the exponent
+     */
     private float n;
-    
+
     /**
      * Creates a new instance of FunctionType2
      */
     public FunctionType2() {
         super(TYPE_2);
     }
-    
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Read the zeros, ones and exponent
-	 */
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Read the zeros, ones and exponent
+     */
     @Override
-	protected void parse(PDFObject obj) throws IOException 
-    {
+    protected void parse(final PDFObject obj) throws IOException {
         // read the exponent (required)
-        PDFObject nObj = obj.getDictRef("N");
+        final PDFObject nObj = obj.getDictRef("N");
         if (nObj == null) {
             throw new PDFParseException("Exponent required for function type 2!");
         }
         setN(nObj.getFloatValue());
-        
+
         // read the zeros array (optional)
-        PDFObject cZeroObj = obj.getDictRef("C0");
+        final PDFObject cZeroObj = obj.getDictRef("C0");
         if (cZeroObj != null) {
-            PDFObject[] cZeroAry = cZeroObj.getArray();
-            float[] cZero = new float[cZeroAry.length];
+            final PDFObject[] cZeroAry = cZeroObj.getArray();
+            final float[] cZero = new float[cZeroAry.length];
             for (int i = 0; i < cZeroAry.length; i++) {
                 cZero[i] = cZeroAry[i].getFloatValue();
             }
             setC0(cZero);
         }
-        
+
         // read the ones array (optional)
-        PDFObject cOneObj = obj.getDictRef("C1");
+        final PDFObject cOneObj = obj.getDictRef("C1");
         if (cOneObj != null) {
-            PDFObject[] cOneAry = cOneObj.getArray();
-            float[] cOne = new float[cOneAry.length];
+            final PDFObject[] cOneAry = cOneObj.getArray();
+            final float[] cOne = new float[cOneAry.length];
             for (int i = 0; i < cOneAry.length; i++) {
                 cOne[i] = cOneAry[i].getFloatValue();
             }
             setC1(cOne);
         }
     }
-    
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Calculate the function value for the input.  For each output (j),
-	 * the function value is:
-	 * C0(j) + x^N * (C1(j) - C0(j))
-	 */
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Calculate the function value for the input.  For each output (j),
+     * the function value is:
+     * C0(j) + x^N * (C1(j) - C0(j))
+     */
     @Override
-	protected void doFunction(float[] inputs, int inputOffset, 
-                              float[] outputs, int outputOffset)
-    {
+    protected void doFunction(final float[] inputs, final int inputOffset,
+                              final float[] outputs, final int outputOffset) {
         // read the input value
-        float input = inputs[inputOffset];
-        
+        final float input = inputs[inputOffset];
+
         // calculate the output values
         for (int i = 0; i < getNumOutputs(); i++) {
-            outputs[i + outputOffset] = getC0(i) + 
-                (float) (Math.pow(input, getN()) * (getC1(i) - getC0(i)));
+            outputs[i + outputOffset] = getC0(i) +
+                    (float) (Math.pow(input, getN()) * (getC1(i) - getC0(i)));
         }
     }
-    
-    /** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public int getNumOutputs()
-    {
+    public int getNumOutputs() {
         // For Type 2 functions, the number of outputs is determined by the size of C0 (or C1).
         return c0.length;
     }
-    
+
     /**
      * Get the exponent
      *
@@ -124,51 +133,51 @@ public class FunctionType2 extends PDFFunction {
     public float getN() {
         return this.n;
     }
-    
+
     /**
      * Set the exponent
      *
      * @param n a float.
      */
-    protected void setN(float n) {
+    protected void setN(final float n) {
         this.n = n;
     }
-    
+
     /**
      * Get the values at zero
      *
      * @param index a int.
      * @return a float.
      */
-    public float getC0(int index) {
+    public float getC0(final int index) {
         return this.c0[index];
     }
-    
+
     /**
      * Set the values at zero
      *
      * @param c0 an array of {@link float} objects.
      */
-    protected void setC0(float[] c0) {
+    protected void setC0(final float[] c0) {
         this.c0 = c0;
     }
-    
+
     /**
      * Get the values at one
      *
      * @param index a int.
      * @return a float.
      */
-    public float getC1(int index) {
+    public float getC1(final int index) {
         return this.c1[index];
     }
-    
+
     /**
      * Set the values at one
      *
      * @param c1 an array of {@link float} objects.
      */
-    protected void setC1(float[] c1) {
+    protected void setC1(final float[] c1) {
         this.c1 = c1;
-    }  
+    }
 }

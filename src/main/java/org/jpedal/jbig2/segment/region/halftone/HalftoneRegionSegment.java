@@ -1,57 +1,31 @@
-/**
-* ===========================================
-* Java Pdf Extraction Decoding Access Library
-* ===========================================
-*
-* Project Info:  http://www.jpedal.org
-* (C) Copyright 1997-2008, IDRsolutions and Contributors.
-* Main Developer: Simon Barnett
-*
-* 	This file is part of JPedal
-*
-* Copyright (c) 2008, IDRsolutions
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the IDRsolutions nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY IDRsolutions ``AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL IDRsolutions BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* Other JBIG2 image decoding implementations include
-* jbig2dec (http://jbig2dec.sourceforge.net/)
-* xpdf (http://www.foolabs.com/xpdf/)
-* 
-* The final draft JBIG2 specification can be found at http://www.jpeg.org/public/fcd14492.pdf
-* 
-* All three of the above resources were used in the writing of this software, with methodologies,
-* processes and inspiration taken from all three.
-*
-* ---------------
-* HalftoneRegionSegment.java
-* ---------------
-*/
-package org.jpedal.jbig2.segment.region.halftone;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
+ */
+package main.java.org.jpedal.jbig2.segment.region.halftone;
 
-import java.io.IOException;
-import java.util.logging.Logger;
-
+import lombok.extern.slf4j.Slf4j;
 import org.jpedal.jbig2.JBIG2Exception;
 import org.jpedal.jbig2.decoders.JBIG2StreamDecoder;
 import org.jpedal.jbig2.image.JBIG2Bitmap;
@@ -60,210 +34,208 @@ import org.jpedal.jbig2.segment.pageinformation.PageInformationSegment;
 import org.jpedal.jbig2.segment.pattern.PatternDictionarySegment;
 import org.jpedal.jbig2.segment.region.RegionFlags;
 import org.jpedal.jbig2.segment.region.RegionSegment;
-import org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags;
 import org.jpedal.jbig2.util.BinaryOperation;
+
+import java.io.IOException;
 
 /**
  * <p>HalftoneRegionSegment class.</p>
- *
-  *
-  *
  */
+@Slf4j
 public class HalftoneRegionSegment extends RegionSegment {
-	
-	private static final Logger logger = Logger.getLogger(HalftoneRegionSegment.class.getName());
-	private final org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags halftoneRegionFlags = new org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags();
+    private final HalftoneRegionFlags halftoneRegionFlags = new HalftoneRegionFlags();
 
-	private final boolean inlineImage;
+    private final boolean inlineImage;
 
-	/**
-	 * <p>Constructor for HalftoneRegionSegment.</p>
-	 *
-	 * @param streamDecoder a {@link JBIG2StreamDecoder} object.
-	 * @param inlineImage a boolean.
-	 */
-	public HalftoneRegionSegment(JBIG2StreamDecoder streamDecoder, boolean inlineImage) {
-		super(streamDecoder);
+    /**
+     * <p>Constructor for HalftoneRegionSegment.</p>
+     *
+     * @param streamDecoder a {@link JBIG2StreamDecoder} object.
+     * @param inlineImage   a boolean.
+     */
+    public HalftoneRegionSegment(final JBIG2StreamDecoder streamDecoder, final boolean inlineImage) {
+        super(streamDecoder);
 
-		this.inlineImage = inlineImage;
-	}
+        this.inlineImage = inlineImage;
+    }
 
-	/**
-	 * <p>readSegment.</p>
-	 *
-	 * @throws IOException if any.
-	 * @throws JBIG2Exception if any.
-	 */
-	public void readSegment() throws IOException, JBIG2Exception {
-		super.readSegment();
+    /**
+     * <p>readSegment.</p>
+     *
+     * @throws IOException             if any.
+     * @throws org.jpedal.jbig2.JBIG2Exception if any.
+     */
+    public void readSegment() throws IOException, JBIG2Exception {
+        super.readSegment();
 
-		/** read text region Segment flags */
-		readHalftoneRegionFlags();
+        /** read text region Segment flags */
+        readHalftoneRegionFlags();
 
-		short[] buf = new short[4];
-		decoder.readByte(buf);
-		int gridWidth = BinaryOperation.getInt32(buf);
+        short[] buf = new short[4];
+        decoder.readByte(buf);
+        final int gridWidth = BinaryOperation.getInt32(buf);
 
-		buf = new short[4];
-		decoder.readByte(buf);
-		int gridHeight = BinaryOperation.getInt32(buf);
+        buf = new short[4];
+        decoder.readByte(buf);
+        final int gridHeight = BinaryOperation.getInt32(buf);
 
-		buf = new short[4];
-		decoder.readByte(buf);
-		int gridX = BinaryOperation.getInt32(buf);
+        buf = new short[4];
+        decoder.readByte(buf);
+        final int gridX = BinaryOperation.getInt32(buf);
 
-		buf = new short[4];
-		decoder.readByte(buf);
-		int gridY = BinaryOperation.getInt32(buf);
+        buf = new short[4];
+        decoder.readByte(buf);
+        final int gridY = BinaryOperation.getInt32(buf);
 
-		if (JBIG2StreamDecoder.debug)
-			logger.info("grid pos and size = " + gridX + ',' + gridY + ' ' + gridWidth + ',' + gridHeight);
+        if (JBIG2StreamDecoder.debug)
+            log.info("grid pos and size = {},{},{},{} ", gridX, gridY, gridWidth, gridHeight);
 
-		buf = new short[2];
-		decoder.readByte(buf);
-		int stepX = BinaryOperation.getInt16(buf);
+        buf = new short[2];
+        decoder.readByte(buf);
+        final int stepX = BinaryOperation.getInt16(buf);
 
-		buf = new short[2];
-		decoder.readByte(buf);
-		int stepY = BinaryOperation.getInt16(buf);
+        buf = new short[2];
+        decoder.readByte(buf);
+        final int stepY = BinaryOperation.getInt16(buf);
 
-		if (JBIG2StreamDecoder.debug)
-			logger.info("step size = " + stepX + ',' + stepY);
+        if (JBIG2StreamDecoder.debug)
+            log.info("step size = {}, {} ", stepX, stepY);
 
-		int[] referedToSegments = segmentHeader.getReferredToSegments();
-		if (referedToSegments.length != 1) {
-			logger.info("Error in halftone Segment. refSegs should == 1");
-		}
+        final int[] referedToSegments = segmentHeader.getReferredToSegments();
+        if (referedToSegments.length != 1) {
+            log.info("Error in halftone Segment. refSegs should == 1");
+        }
 
-		Segment segment = decoder.findSegment(referedToSegments[0]);
-		if (segment.getSegmentHeader().getSegmentType() != Segment.PATTERN_DICTIONARY) {
-			if (JBIG2StreamDecoder.debug)
-				logger.info("Error in halftone Segment. bad symbol dictionary reference");
-		}
-		
-		PatternDictionarySegment patternDictionarySegment = (PatternDictionarySegment) segment;
+        final Segment segment = decoder.findSegment(referedToSegments[0]);
+        if (segment.getSegmentHeader().getSegmentType() != Segment.PATTERN_DICTIONARY) {
+            if (JBIG2StreamDecoder.debug)
+                log.info("Error in halftone Segment. bad symbol dictionary reference");
+        }
 
-		int bitsPerValue = 0, i = 1;
-		while (i < patternDictionarySegment.getSize()) {
-			bitsPerValue++;
-			i <<= 1;
-		}
-		
-		JBIG2Bitmap bitmap = patternDictionarySegment.getBitmaps()[0];
-		int patternWidth = bitmap.getWidth();
-		int patternHeight = bitmap.getHeight();
+        final PatternDictionarySegment patternDictionarySegment = (PatternDictionarySegment) segment;
 
-		if (JBIG2StreamDecoder.debug)
-			logger.info("pattern size = " + patternWidth + ',' + patternHeight);
+        int bitsPerValue = 0, i = 1;
+        while (i < patternDictionarySegment.getSize()) {
+            bitsPerValue++;
+            i <<= 1;
+        }
 
-		boolean useMMR = halftoneRegionFlags.getFlagValue(org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags.H_MMR) != 0;
-		int template = halftoneRegionFlags.getFlagValue(org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags.H_TEMPLATE);
-		
-		if (!useMMR) {
-			arithmeticDecoder.resetGenericStats(template, null);
-			arithmeticDecoder.start();
-		}
+        JBIG2Bitmap bitmap = patternDictionarySegment.getBitmaps()[0];
+        final int patternWidth = bitmap.getWidth();
+        final int patternHeight = bitmap.getHeight();
 
-		int halftoneDefaultPixel = halftoneRegionFlags.getFlagValue(org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags.H_DEF_PIXEL);
-		bitmap = new JBIG2Bitmap(regionBitmapWidth, regionBitmapHeight, arithmeticDecoder, huffmanDecoder, mmrDecoder);
-		bitmap.clear(halftoneDefaultPixel);
+        if (JBIG2StreamDecoder.debug)
+            log.info("pattern size = {}, {} ", patternWidth, patternHeight);
 
-		boolean enableSkip = halftoneRegionFlags.getFlagValue(org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags.H_ENABLE_SKIP) != 0;
-		
-		JBIG2Bitmap skipBitmap = null;
-		if (enableSkip) {
-			skipBitmap = new JBIG2Bitmap(gridWidth, gridHeight, arithmeticDecoder, huffmanDecoder, mmrDecoder);
-			skipBitmap.clear(0);
-			for (int y = 0; y < gridHeight; y++) {
-				for (int x = 0; x < gridWidth; x++) {
-					int xx = gridX + y * stepY + x * stepX;
-					int yy = gridY + y * stepX - x * stepY;
-					
-					if (((xx + patternWidth) >> 8) <= 0 || (xx >> 8) >= regionBitmapWidth || ((yy + patternHeight) >> 8) <= 0 || (yy >> 8) >= regionBitmapHeight) {
-						skipBitmap.setPixel(y, x, 1);
-					}
-				}
-			}
-		}
+        final boolean useMMR = halftoneRegionFlags.getFlagValue(HalftoneRegionFlags.H_MMR) != 0;
+        final int template = halftoneRegionFlags.getFlagValue(HalftoneRegionFlags.H_TEMPLATE);
 
-		int[] grayScaleImage = new int[gridWidth * gridHeight];
+        if (!useMMR) {
+            arithmeticDecoder.resetGenericStats(template, null);
+            arithmeticDecoder.start();
+        }
 
-		short[] genericBAdaptiveTemplateX = new short[4], genericBAdaptiveTemplateY = new short[4];
+        final int halftoneDefaultPixel = halftoneRegionFlags.getFlagValue(HalftoneRegionFlags.H_DEF_PIXEL);
+        bitmap = new JBIG2Bitmap(regionBitmapWidth, regionBitmapHeight, arithmeticDecoder, huffmanDecoder, mmrDecoder);
+        bitmap.clear(halftoneDefaultPixel);
 
-		genericBAdaptiveTemplateX[0] = (short) (template <= 1 ? 3 : 2);
-		genericBAdaptiveTemplateY[0] = -1;
-		genericBAdaptiveTemplateX[1] = -3;
-		genericBAdaptiveTemplateY[1] = -1;
-		genericBAdaptiveTemplateX[2] = 2;
-		genericBAdaptiveTemplateY[2] = -2;
-		genericBAdaptiveTemplateX[3] = -2;
-		genericBAdaptiveTemplateY[3] = -2;
+        final boolean enableSkip = halftoneRegionFlags.getFlagValue(HalftoneRegionFlags.H_ENABLE_SKIP) != 0;
 
-        JBIG2Bitmap grayBitmap ;
+        JBIG2Bitmap skipBitmap = null;
+        if (enableSkip) {
+            skipBitmap = new JBIG2Bitmap(gridWidth, gridHeight, arithmeticDecoder, huffmanDecoder, mmrDecoder);
+            skipBitmap.clear(0);
+            for (int y = 0; y < gridHeight; y++) {
+                for (int x = 0; x < gridWidth; x++) {
+                    final int xx = gridX + y * stepY + x * stepX;
+                    final int yy = gridY + y * stepX - x * stepY;
+
+                    if (((xx + patternWidth) >> 8) <= 0 || (xx >> 8) >= regionBitmapWidth || ((yy + patternHeight) >> 8) <= 0 || (yy >> 8) >= regionBitmapHeight) {
+                        skipBitmap.setPixel(y, x, 1);
+                    }
+                }
+            }
+        }
+
+        final int[] grayScaleImage = new int[gridWidth * gridHeight];
+
+        final short[] genericBAdaptiveTemplateX = new short[4];
+        final short[] genericBAdaptiveTemplateY = new short[4];
+
+        genericBAdaptiveTemplateX[0] = (short) (template <= 1 ? 3 : 2);
+        genericBAdaptiveTemplateY[0] = -1;
+        genericBAdaptiveTemplateX[1] = -3;
+        genericBAdaptiveTemplateY[1] = -1;
+        genericBAdaptiveTemplateX[2] = 2;
+        genericBAdaptiveTemplateY[2] = -2;
+        genericBAdaptiveTemplateX[3] = -2;
+        genericBAdaptiveTemplateY[3] = -2;
+
+        JBIG2Bitmap grayBitmap;
 
         for (int j = bitsPerValue - 1; j >= 0; --j) {
-			grayBitmap = new JBIG2Bitmap(gridWidth, gridHeight, arithmeticDecoder, huffmanDecoder, mmrDecoder);
+            grayBitmap = new JBIG2Bitmap(gridWidth, gridHeight, arithmeticDecoder, huffmanDecoder, mmrDecoder);
 
-			grayBitmap.readBitmap(useMMR, template, false, enableSkip, skipBitmap, genericBAdaptiveTemplateX, genericBAdaptiveTemplateY, -1);
+            grayBitmap.readBitmap(useMMR, template, false, enableSkip, skipBitmap, genericBAdaptiveTemplateX, genericBAdaptiveTemplateY, -1);
 
-			i = 0;
-			for (int row = 0; row < gridHeight; row++) {
-				for (int col = 0; col < gridWidth; col++) {
-					int bit = grayBitmap.getPixel(col, row) ^ grayScaleImage[i] & 1;
-					grayScaleImage[i] = (grayScaleImage[i] << 1) | bit;
-					i++;
-				}
-			}
-		}
+            i = 0;
+            for (int row = 0; row < gridHeight; row++) {
+                for (int col = 0; col < gridWidth; col++) {
+                    final int bit = grayBitmap.getPixel(col, row) ^ grayScaleImage[i] & 1;
+                    grayScaleImage[i] = (grayScaleImage[i] << 1) | bit;
+                    i++;
+                }
+            }
+        }
 
-		int combinationOperator = halftoneRegionFlags.getFlagValue(org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags.H_COMB_OP);
+        final int combinationOperator = halftoneRegionFlags.getFlagValue(HalftoneRegionFlags.H_COMB_OP);
 
-		i = 0;
-		for (int col = 0; col < gridHeight; col++) {
-			int xx = gridX + col * stepY;
-			int yy = gridY + col * stepX;
-			for (int row = 0; row < gridWidth; row++) {
-				if (!(enableSkip && skipBitmap.getPixel(col, row) == 1)) {
-					JBIG2Bitmap patternBitmap = patternDictionarySegment.getBitmaps()[grayScaleImage[i]];
-					bitmap.combine(patternBitmap, xx >> 8, yy >> 8, combinationOperator);
-				}
-				
-				xx += stepX;
-				yy -= stepY;
-				
-				i++;
-			}
-		}
+        i = 0;
+        for (int col = 0; col < gridHeight; col++) {
+            int xx = gridX + col * stepY;
+            int yy = gridY + col * stepX;
+            for (int row = 0; row < gridWidth; row++) {
+                if (!(enableSkip && skipBitmap.getPixel(col, row) == 1)) {
+                    final JBIG2Bitmap patternBitmap = patternDictionarySegment.getBitmaps()[grayScaleImage[i]];
+                    bitmap.combine(patternBitmap, xx >> 8, yy >> 8, combinationOperator);
+                }
 
-		if (inlineImage) {
-			PageInformationSegment pageSegment = decoder.findPageSegement(segmentHeader.getPageAssociation());
-			JBIG2Bitmap pageBitmap = pageSegment.getPageBitmap();
+                xx += stepX;
+                yy -= stepY;
 
-			int externalCombinationOperator = regionFlags.getFlagValue(RegionFlags.EXTERNAL_COMBINATION_OPERATOR);
-			pageBitmap.combine(bitmap, regionBitmapXLocation, regionBitmapYLocation, externalCombinationOperator);
-		} else {
-			bitmap.setBitmapNumber(getSegmentHeader().getSegmentNumber());
-			decoder.appendBitmap(bitmap);
-		}
+                i++;
+            }
+        }
 
-	}
+        if (inlineImage) {
+            final PageInformationSegment pageSegment = decoder.findPageSegement(segmentHeader.getPageAssociation());
+            final JBIG2Bitmap pageBitmap = pageSegment.getPageBitmap();
 
-	private void readHalftoneRegionFlags() throws IOException {
-		/** extract text region Segment flags */
-		short halftoneRegionFlagsField = decoder.readByte();
+            final int externalCombinationOperator = regionFlags.getFlagValue(RegionFlags.EXTERNAL_COMBINATION_OPERATOR);
+            pageBitmap.combine(bitmap, regionBitmapXLocation, regionBitmapYLocation, externalCombinationOperator);
+        } else {
+            bitmap.setBitmapNumber(getSegmentHeader().getSegmentNumber());
+            decoder.appendBitmap(bitmap);
+        }
 
-		halftoneRegionFlags.setFlags(halftoneRegionFlagsField);
+    }
 
-		if (JBIG2StreamDecoder.debug)
-			logger.info("generic region Segment flags = " + halftoneRegionFlagsField);
-	}
+    private void readHalftoneRegionFlags() throws IOException {
+        /** extract text region Segment flags */
+        final short halftoneRegionFlagsField = decoder.readByte();
 
-	/**
-	 * <p>Getter for the field <code>halftoneRegionFlags</code>.</p>
-	 *
-	 * @return a {@link org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags} object.
-	 */
-	public HalftoneRegionFlags getHalftoneRegionFlags() {
-		return halftoneRegionFlags;
-	}
+        halftoneRegionFlags.setFlags(halftoneRegionFlagsField);
+
+        if (JBIG2StreamDecoder.debug)
+            log.info("generic region Segment flags = {} ", halftoneRegionFlagsField);
+    }
+
+    /**
+     * <p>Getter for the field <code>halftoneRegionFlags</code>.</p>
+     *
+     * @return a {@link org.jpedal.jbig2.segment.region.halftone.HalftoneRegionFlags} object.
+     */
+    public HalftoneRegionFlags getHalftoneRegionFlags() {
+        return halftoneRegionFlags;
+    }
 }

@@ -1,4 +1,32 @@
-package org.loboevolution.pdfview.font.ttf;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
+ */
+
+package main.java.org.loboevolution.pdfview.font.ttf;
+
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,151 +37,101 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/**
- * Build an object which provides access to all the Adobe glyph names, using
- * a unicode value, and which can translate a glyph name to one or more
- * unicode values.
- *
- *# ###################################################################################
- *# Copyright (c) 1997,1998,2002,2007 Adobe Systems Incorporated
- *#
- *# Permission is hereby granted, free of charge, to any person obtaining a
- *# copy of this documentation file to use, copy, publish, distribute,
- *# sublicense, and/or sell copies of the documentation, and to permit
- *# others to do the same, provided that:
- *# - No modification, editing or other alteration of this document is
- *# allowed; and
- *# - The above copyright notice and this permission notice shall be
- *# included in all copies of the documentation.
- *#
- *# Permission is hereby granted, free of charge, to any person obtaining a
- *# copy of this documentation file, to create their own derivative works
- *# from the content of this document to use, copy, publish, distribute,
- *# sublicense, and/or sell the derivative works, and to permit others to do
- *# the same, provided that the derived work is not represented as being a
- *# copy or version of this document.
- *#
- *# Adobe shall not be liable to any party for any loss of revenue or profit
- *# or for indirect, incidental, special, consequential, or other similar
- *# damages, whether based on tort (including without limitation negligence
- *# or strict liability), contract or other legal or equitable grounds even
- *# if Adobe has been advised or had reason to know of the possibility of
- *# such damages. The Adobe materials are provided on an "AS IS" basis.
- *# Adobe specifically disclaims all express, statutory, or implied
- *# warranties relating to the Adobe materials, including but not limited to
- *# those concerning merchantability or fitness for a particular purpose or
- *# non-infringement of any third party rights regarding the Adobe
- *# materials.
- *# ###################################################################################
- *# Name:          Adobe Glyph List
- *# Table version: 2.0
- *# Date:          September 20, 2002
- *#
- *# See http://partners.adobe.com/asn/developer/typeforum/unicodegn.html
- *#
- *# Format: Semicolon-delimited fields:
- *#            (1) glyph name
- *#            (2) Unicode scalar value
- *
- * Author tomoke
-  *
- */
-public class AdobeGlyphList {
-	
-	/** The Constant logger. */
-	private static final Logger logger = Logger.getLogger(AdobeGlyphList.class.getName());
+@Slf4j
+public final class AdobeGlyphList {
 
-    /** provide a translation from a glyph name to the possible unicode values. */
-    static private Map<String, int[]> glyphToUnicodes;
-
-    /** provide a translation from a unicode value to a glyph name. */
-    static private Map<Integer, String> unicodeToGlyph;
-
-    /** the loader thread we are reading through. */
+    /**
+     * the loader thread we are reading through.
+     */
     static Thread glyphLoaderThread = null;
-
+    /**
+     * provide a translation from a glyph name to the possible unicode values.
+     */
+    static private Map<String, int[]> glyphToUnicodes;
+    /**
+     * provide a translation from a unicode value to a glyph name.
+     */
+    static private Map<Integer, String> unicodeToGlyph;
 
     static {
         new AdobeGlyphList();
     }
 
-    /** 
+    /**
      * <p>private constructor to restrict creation to a singleton.</p>
-     * 
+     *
      * <p>We initialize by creating the storage and parsing the glyphlist
      * into the tables.</p>
      */
-	private AdobeGlyphList() {
-		glyphToUnicodes = new HashMap<>(4500);
-		unicodeToGlyph = new HashMap<>(4500);
-		glyphLoaderThread = new Thread(new Runnable() {
+    private AdobeGlyphList() {
+        glyphToUnicodes = new HashMap<>(4500);
+        unicodeToGlyph = new HashMap<>(4500);
+        glyphLoaderThread = new Thread(new Runnable() {
 
-			@Override
-			public void run() {
-				int[] codes;
-				StringTokenizer codeTokens;
-				String glyphName;
-				StringTokenizer tokens;
-				ArrayList<String> unicodes = new ArrayList<>();
-				URL resource = getClass().getResource("/org/loboevolution/pdfview/font/ttf/resource/glyphlist.txt");
-				try (InputStream istr = resource.openStream()) {
-					BufferedReader reader = new BufferedReader(new InputStreamReader(istr));
-					String line = "";
-					while (line != null) {
-						try {
-							unicodes.clear();
-							line = reader.readLine();
-							if (line == null) {
-								break;
-							}
-							line = line.trim();
-							if (line.length() > 0 && !line.startsWith("#")) {
-								// ignore comment lines
-								tokens = new StringTokenizer(line, ";");
-								glyphName = tokens.nextToken();
-								codeTokens = new StringTokenizer(tokens.nextToken(), " ");
-								while (codeTokens.hasMoreTokens()) {
-									unicodes.add(codeTokens.nextToken());
-								}
-								codes = new int[unicodes.size()];
-								for (int i = 0; i < unicodes.size(); i++) {
-									codes[i] = Integer.parseInt(unicodes.get(i), 16);
-									unicodeToGlyph.put(codes[i], glyphName);
-								}
-								glyphToUnicodes.put(glyphName, codes);
-							}
+            @Override
+            public void run() {
+                int[] codes;
+                StringTokenizer codeTokens;
+                String glyphName;
+                StringTokenizer tokens;
+                final ArrayList<String> unicodes = new ArrayList<>();
+                final URL resource = getClass().getResource("/org/loboevolution/pdfview/font/ttf/resource/glyphlist.txt");
+                try (final InputStream istr = resource.openStream()) {
+                    final BufferedReader reader = new BufferedReader(new InputStreamReader(istr));
+                    String line = "";
+                    while (line != null) {
+                        try {
+                            unicodes.clear();
+                            line = reader.readLine();
+                            if (line == null) {
+                                break;
+                            }
+                            line = line.trim();
+                            if (line.length() > 0 && !line.startsWith("#")) {
+                                // ignore comment lines
+                                tokens = new StringTokenizer(line, ";");
+                                glyphName = tokens.nextToken();
+                                codeTokens = new StringTokenizer(tokens.nextToken(), " ");
+                                while (codeTokens.hasMoreTokens()) {
+                                    unicodes.add(codeTokens.nextToken());
+                                }
+                                codes = new int[unicodes.size()];
+                                for (int i = 0; i < unicodes.size(); i++) {
+                                    codes[i] = Integer.parseInt(unicodes.get(i), 16);
+                                    unicodeToGlyph.put(codes[i], glyphName);
+                                }
+                                glyphToUnicodes.put(glyphName, codes);
+                            }
 
-						} catch (IOException ex) {
-							break;
-						}
-					}
-				} catch (IOException e) {
-					logger.log(Level.SEVERE, e.getMessage(), e);
-				}
-			}
-		}, "Adobe Glyph Loader Thread");
-		glyphLoaderThread.setDaemon(true);
-		glyphLoaderThread.setPriority(Thread.MIN_PRIORITY);
-		glyphLoaderThread.start();
-	}
+                        } catch (final IOException ex) {
+                            break;
+                        }
+                    }
+                } catch (final IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }, "Adobe Glyph Loader Thread");
+        glyphLoaderThread.setDaemon(true);
+        glyphLoaderThread.setPriority(Thread.MIN_PRIORITY);
+        glyphLoaderThread.start();
+    }
 
     /**
      * translate a glyph name into the possible unicode values that it
      * might represent. It is possible to have more than one unicode
      * value for a single glyph name.
      *
-     * @param glyphName a {@link java.lang.String} object.
+     * @param glyphName a {@link String} object.
      * @return int[]
      */
-    public static int[] getUnicodeValues(String glyphName) {
+    public static int[] getUnicodeValues(final String glyphName) {
         while (glyphLoaderThread != null && glyphLoaderThread.isAlive()) {
             synchronized (glyphToUnicodes) {
                 try {
                     glyphToUnicodes.wait(250);
-                } catch (InterruptedException ex) {
+                } catch (final InterruptedException ex) {
                     // ignore
                 }
             }
@@ -164,11 +142,11 @@ public class AdobeGlyphList {
     /**
      * return a single index for a glyph, though there may be multiples.
      *
-     * @param glyphName a {@link java.lang.String} object.
+     * @param glyphName a {@link String} object.
      * @return Integer
      */
-    public static Integer getGlyphNameIndex(String glyphName) {
-        int [] unicodes = getUnicodeValues(glyphName);
+    public static Integer getGlyphNameIndex(final String glyphName) {
+        final int[] unicodes = getUnicodeValues(glyphName);
         if (unicodes == null) {
             return null;
         } else {
@@ -183,12 +161,12 @@ public class AdobeGlyphList {
      * @param unicode a int.
      * @return String
      */
-    public static String getGlyphName(int unicode) {
+    public static String getGlyphName(final int unicode) {
         while (glyphLoaderThread != null && glyphLoaderThread.isAlive()) {
             synchronized (glyphToUnicodes) {
                 try {
                     glyphToUnicodes.wait(250);
-                } catch (InterruptedException ex) {
+                } catch (final InterruptedException ex) {
                     // ignore
                 }
             }

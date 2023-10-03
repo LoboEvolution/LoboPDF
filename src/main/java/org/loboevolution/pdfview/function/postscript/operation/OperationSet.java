@@ -1,4 +1,30 @@
-package org.loboevolution.pdfview.function.postscript.operation;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
+ */
+
+package main.java.org.loboevolution.pdfview.function.postscript.operation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,50 +33,51 @@ import java.util.Map;
  * <p>OperationSet class.</p>
  */
 public final class OperationSet {
-	
-    /** the set of all Operations we support. These operations are defined
-     * in Appendix B - Operators.*/
-    private Map<String, PostScriptOperation> operationSet = null;
-    
+
     private static OperationSet instance;
-    
+    /**
+     * the set of all Operations we support. These operations are defined
+     * in Appendix B - Operators.
+     */
+    private Map<String, PostScriptOperation> operationSet = null;
+
     /*************************************************************************
      * Constructor
      ************************************************************************/
-    
+
     private OperationSet() {
-    	super();
-    	initOperations();
+        super();
+        initOperations();
     }
-    
+
     /**
      * <p>Getter for the field <code>instance</code>.</p>
      *
      * @return a {@link org.loboevolution.pdfview.function.postscript.operation.OperationSet} object.
      */
     public static synchronized OperationSet getInstance() {
-    	if (instance == null) {
-    		instance = new OperationSet();
-    	}
-    	return instance;
+        if (instance == null) {
+            instance = new OperationSet();
+        }
+        return instance;
     }
-    
+
     /**
      * <p>getOperation.</p>
      *
-     * @param token a {@link java.lang.String} object.
+     * @param token a {@link String} object.
      * @return a {@link org.loboevolution.pdfview.function.postscript.operation.PostScriptOperation} object.
      */
-    public PostScriptOperation getOperation(String token) {
-    	PostScriptOperation result = this.operationSet.get(token.trim().toLowerCase());
-    	if (result == null) {
-    		result = new PushAsNumber(token);
-    	}
-    	return result;
-    	
+    public PostScriptOperation getOperation(final String token) {
+        PostScriptOperation result = this.operationSet.get(token.trim().toLowerCase());
+        if (result == null) {
+            result = new PushAsNumber(token);
+        }
+        return result;
+
     }
-    
-    
+
+
     /**
      * Initialize the operations that we can perform.
      */
@@ -65,7 +92,7 @@ public final class OperationSet {
          */
         if (this.operationSet == null) {
             this.operationSet = new HashMap<>();
-           
+
             // Arithmetic Operators
             this.operationSet.put("abs", new Abs());
             this.operationSet.put("add", new Add());
@@ -94,7 +121,7 @@ public final class OperationSet {
             this.operationSet.put("eq", new Eq());
             this.operationSet.put("false", new False());
             this.operationSet.put("ge", new Ge());
-            this.operationSet.put("gt",new Gt());
+            this.operationSet.put("gt", new Gt());
             this.operationSet.put("le", new Le());
             this.operationSet.put("lt", new Lt());
             this.operationSet.put("ne", new Ne());
@@ -116,5 +143,5 @@ public final class OperationSet {
             this.operationSet.put("roll", new Roll());
         }
     }
-    
+
 }

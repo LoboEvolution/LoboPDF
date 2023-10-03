@@ -1,23 +1,30 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.font.ttf;
+package main.java.org.loboevolution.pdfview.font.ttf;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -25,36 +32,43 @@ import java.util.Map;
 
 /**
  * <p>CMapFormat6 class.</p>
- *
+ * <p>
  * Author  jkaplan
-  *
  */
 public class CMapFormat6 extends CMap {
-    /** First character code of subrange. */
+    /**
+     * a reverse lookup from glyph id to index.
+     */
+    private final Map<Short, Short> glyphLookup = new HashMap<>();
+    /**
+     * First character code of subrange.
+     */
     private short firstCode;
-    /** Number of character codes in subrange. */
+    /**
+     * Number of character codes in subrange.
+     */
     private short entryCount;
-    /** Array of glyph index values for character codes in the range. */
-    private short [] glyphIndexArray;
-    /** a reverse lookup from glyph id to index. */
-    private final Map<Short,Short> glyphLookup = new HashMap<>();
+    /**
+     * Array of glyph index values for character codes in the range.
+     */
+    private short[] glyphIndexArray;
 
     /**
      * Creates a new instance of CMapFormat0
      *
      * @param language a short.
      */
-    protected CMapFormat6(short language) {
+    protected CMapFormat6(final short language) {
         super((short) 6, language);
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get the length of this table
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get the length of this table
+     */
     @Override
-	public short getLength() {
+    public short getLength() {
         // start with the size of the fixed header
         short size = 5 * 2;
 
@@ -63,14 +77,14 @@ public class CMapFormat6 extends CMap {
         return size;
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Cannot map from a byte
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Cannot map from a byte
+     */
     @Override
-	public byte map(byte src) {
-        char c = map((char) src);
+    public byte map(final byte src) {
+        final char c = map((char) src);
         if (c < Byte.MIN_VALUE || c > Byte.MAX_VALUE) {
             // out of range
             return 0;
@@ -78,13 +92,13 @@ public class CMapFormat6 extends CMap {
         return (byte) c;
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Map from char
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Map from char
+     */
     @Override
-	public char map(char src) {
+    public char map(final char src) {
 
         // find first segment with endcode > src
         if (src < this.firstCode || src > (this.firstCode + this.entryCount)) {
@@ -95,14 +109,14 @@ public class CMapFormat6 extends CMap {
         return (char) this.glyphIndexArray[src - this.firstCode];
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get the src code which maps to the given glyphID
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get the src code which maps to the given glyphID
+     */
     @Override
-	public char reverseMap(short glyphID) {
-        Short result = this.glyphLookup.get(glyphID);
+    public char reverseMap(final short glyphID) {
+        final Short result = this.glyphLookup.get(glyphID);
         if (result == null) {
             return '\000';
         }
@@ -110,18 +124,18 @@ public class CMapFormat6 extends CMap {
     }
 
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get the data in this map as a ByteBuffer
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get the data in this map as a ByteBuffer
+     */
     @Override
-	public void setData(int length, ByteBuffer data) {
+    public void setData(final int length, final ByteBuffer data) {
         // read the table size values
         this.firstCode = data.getShort();
         this.entryCount = data.getShort();
 
-        this.glyphIndexArray = new short [this.entryCount];
+        this.glyphIndexArray = new short[this.entryCount];
         for (int i = 0; i < this.glyphIndexArray.length; i++) {
             this.glyphIndexArray[i] = data.getShort();
             this.glyphLookup.put(this.glyphIndexArray[i],
@@ -129,14 +143,14 @@ public class CMapFormat6 extends CMap {
         }
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get the data in the map as a byte buffer
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get the data in the map as a byte buffer
+     */
     @Override
-	public ByteBuffer getData() {
-        ByteBuffer buf = ByteBuffer.allocate(getLength());
+    public ByteBuffer getData() {
+        final ByteBuffer buf = ByteBuffer.allocate(getLength());
 
         // write the header
         buf.putShort(getFormat());
@@ -148,7 +162,7 @@ public class CMapFormat6 extends CMap {
         buf.putShort(this.entryCount);
 
         // write the endCodes
-        for (short value : this.glyphIndexArray) {
+        for (final short value : this.glyphIndexArray) {
             buf.putShort(value);
         }
         // reset the data pointer

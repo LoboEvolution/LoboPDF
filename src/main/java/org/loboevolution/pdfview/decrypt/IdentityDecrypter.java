@@ -1,59 +1,45 @@
 /*
- * Copyright 2008 Pirion Systems Pty Ltd, 139 Warry St,
- * Fortitude Valley, Queensland, Australia
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.decrypt;
-
-import java.nio.ByteBuffer;
+package main.java.org.loboevolution.pdfview.decrypt;
 
 import org.loboevolution.pdfview.PDFObject;
 import org.loboevolution.pdfview.PDFParseException;
 
+import java.nio.ByteBuffer;
+
 /**
  * Performs identity decryption; that is, inputs aren't encrypted and
  * are returned right back.
- *
+ * <p>
  * Author Luke Kirby
-  *
-  *
  */
 public class IdentityDecrypter implements PDFDecrypter {
 
     private static final IdentityDecrypter INSTANCE = new IdentityDecrypter();
-
-	/** {@inheritDoc} */
-    @Override
-	public ByteBuffer decryptBuffer(String cryptFilterName,
-            PDFObject streamObj, ByteBuffer streamBuf)
-            throws PDFParseException {
-
-        if (cryptFilterName != null) {
-            throw new PDFParseException("This Encryption version does not support Crypt filters");
-        }
-
-        return streamBuf;
-    }
-
-	/** {@inheritDoc} */
-    @Override
-	public String decryptString(int objNum, int objGen, String inputBasicString) {
-        return inputBasicString;
-    }
 
     /**
      * <p>getInstance.</p>
@@ -64,21 +50,50 @@ public class IdentityDecrypter implements PDFDecrypter {
         return INSTANCE;
     }
 
-	/** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-	public boolean isEncryptionPresent() {
+    public ByteBuffer decryptBuffer(final String cryptFilterName,
+                                    final PDFObject streamObj, final ByteBuffer streamBuf)
+            throws PDFParseException {
+
+        if (cryptFilterName != null) {
+            throw new PDFParseException("This Encryption version does not support Crypt filters");
+        }
+
+        return streamBuf;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String decryptString(final int objNum, final int objGen, final String inputBasicString) {
+        return inputBasicString;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isEncryptionPresent() {
         return false;
     }
 
-	/** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-	public boolean isEncryptionPresent(String cryptFilterName) {
+    public boolean isEncryptionPresent(final String cryptFilterName) {
         return false;
     }
 
-	/** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-	public boolean isOwnerAuthorised() {
+    public boolean isOwnerAuthorised() {
         return false;
     }
 }

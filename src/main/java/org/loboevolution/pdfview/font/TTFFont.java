@@ -1,22 +1,32 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.font;
+package main.java.org.loboevolution.pdfview.font;
+
+import org.loboevolution.pdfview.PDFObject;
+import org.loboevolution.pdfview.font.ttf.*;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
@@ -27,45 +37,34 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
 
-import org.loboevolution.pdfview.PDFObject;
-import org.loboevolution.pdfview.font.ttf.AdobeGlyphList;
-import org.loboevolution.pdfview.font.ttf.CMap;
-import org.loboevolution.pdfview.font.ttf.CmapTable;
-import org.loboevolution.pdfview.font.ttf.Glyf;
-import org.loboevolution.pdfview.font.ttf.GlyfCompound;
-import org.loboevolution.pdfview.font.ttf.GlyfSimple;
-import org.loboevolution.pdfview.font.ttf.GlyfTable;
-import org.loboevolution.pdfview.font.ttf.HeadTable;
-import org.loboevolution.pdfview.font.ttf.HmtxTable;
-import org.loboevolution.pdfview.font.ttf.PostTable;
-import org.loboevolution.pdfview.font.ttf.TrueTypeFont;
-
 /**
  * A true-type font
- *
-  *
-  *
  */
 public class TTFFont extends OutlineFont {
 
-    /** the truetype font itself */
+    /**
+     * the truetype font itself
+     */
     private final TrueTypeFont font;
 
-    /** the number of units per em in the font */
+    /**
+     * the number of units per em in the font
+     */
     private float unitsPerEm;
 
     /**
      * <p>Constructor for TTFFont.</p>
      *
-     * @param baseFont a {@link java.lang.String} object.
-     * @param fontObj a {@link org.loboevolution.pdfview.PDFObject} object.
+     * @param baseFont   a {@link String} object.
+     * @param fontObj    a {@link PDFObject} object.
      * @param descriptor a {@link org.loboevolution.pdfview.font.PDFFontDescriptor} object.
-     * @throws java.io.IOException if any.
+     * @throws IOException if any.
      */
-    public TTFFont (String baseFont, PDFObject fontObj,
-                    PDFFontDescriptor descriptor) throws IOException {
+    public TTFFont(final String baseFont, final PDFObject fontObj,
+                   final PDFFontDescriptor descriptor) throws IOException {
         this(baseFont, fontObj, descriptor, null);
     }
+
     /**
      * create a new TrueTypeFont object based on a description of the
      * font from the PDF file.  If the description happens to contain
@@ -73,22 +72,22 @@ public class TTFFont extends OutlineFont {
      * true type font.  Otherwise, parse the description for key information
      * and use that to generate an appropriate font.
      *
-     * @param baseFont a {@link java.lang.String} object.
-     * @param fontObj a {@link org.loboevolution.pdfview.PDFObject} object.
+     * @param baseFont   a {@link String} object.
+     * @param fontObj    a {@link PDFObject} object.
      * @param descriptor a {@link org.loboevolution.pdfview.font.PDFFontDescriptor} object.
-     * @param fontFile a {@link java.io.File} object.
-     * @throws java.io.IOException if any.
+     * @param fontFile   a {@link File} object.
+     * @throws IOException if any.
      */
-    public TTFFont (String baseFont, PDFObject fontObj,
-                    PDFFontDescriptor descriptor, File fontFile)
+    public TTFFont(final String baseFont, final PDFObject fontObj,
+                   final PDFFontDescriptor descriptor, final File fontFile)
             throws IOException {
-        super (baseFont, fontObj, descriptor);
+        super(baseFont, fontObj, descriptor);
 
-        PDFObject ttfObj = descriptor.getFontFile2 ();
+        final PDFObject ttfObj = descriptor.getFontFile2();
 
         if (ttfObj != null || fontFile != null) {
             if (ttfObj != null) {
-                font = TrueTypeFont.parseFont (ttfObj.getStreamBuffer ());
+                font = TrueTypeFont.parseFont(ttfObj.getStreamBuffer());
             } else {
                 final RandomAccessFile raFile = fontFile != null ? new RandomAccessFile(fontFile, "r") : null;
                 final FileChannel fc = raFile.getChannel();
@@ -99,19 +98,19 @@ public class TTFFont extends OutlineFont {
                 } finally {
                     try {
                         fc.close();
-                    } catch (IOException ioEx) {
+                    } catch (final IOException ioEx) {
                         // swallow
                     }
                     try {
                         raFile.close();
-                    } catch (IOException ioEx) {
+                    } catch (final IOException ioEx) {
                         // swallow
                     }
                 }
             }
             // read the units per em from the head table
-            HeadTable head = (HeadTable) font.getTable ("head");
-            unitsPerEm = head.getUnitsPerEm ();
+            final HeadTable head = (HeadTable) font.getTable("head");
+            unitsPerEm = head.getUnitsPerEm();
         } else {
             font = null;
         }
@@ -120,143 +119,142 @@ public class TTFFont extends OutlineFont {
     /**
      * <p>getNames.</p>
      *
-     * @return a {@link java.util.Collection} object.
+     * @return a {@link Collection} object.
      */
-    public Collection<String> getNames()
-    {
+    public Collection<String> getNames() {
         return font.getNames();
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get the outline of a character given the character code
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get the outline of a character given the character code
+     */
     @Override
-	protected synchronized GeneralPath getOutline (char src, float width) {
+    protected synchronized GeneralPath getOutline(final char src, final float width) {
         // find the cmaps
-        CmapTable cmap = (CmapTable) this.font.getTable ("cmap");
+        final CmapTable cmap = (CmapTable) this.font.getTable("cmap");
 
         // if there are no cmaps, this is (hopefully) a cid-mapped font,
         // so just trust the value we were given for src
         if (cmap == null) {
-            return getOutline ((int) src, width);
+            return getOutline((int) src, width);
         }
 
-        CMap[] maps = cmap.getCMaps ();
+        final CMap[] maps = cmap.getCMaps();
 
         // try the maps in order
-        for (CMap cMap2 : maps) {
-            int idx = cMap2.map (src);
+        for (final CMap cMap2 : maps) {
+            final int idx = cMap2.map(src);
             if (idx != 0) {
-                return getOutline (idx, width);
+                return getOutline(idx, width);
             }
         }
-        
+
         // windows symbol font CMap may use one of the following code ranges
         if (src >= 0 && src <= 0xFF) {
-        	int[] symbolPages = new int[]{0xF000, 0xF100, 0xF200};        	
-        	for (int codePage : symbolPages) {
-        		for (CMap cMap2 : maps) {
-                    int idx = cMap2.map ( (char)(src | codePage));
+            final int[] symbolPages = new int[]{0xF000, 0xF100, 0xF200};
+            for (final int codePage : symbolPages) {
+                for (final CMap cMap2 : maps) {
+                    final int idx = cMap2.map((char) (src | codePage));
                     if (idx != 0) {
-                        return getOutline (idx, width);
+                        return getOutline(idx, width);
                     }
-                }        					
-			}
+                }
+            }
         }
 
         // not found, return the empty glyph
-        return getOutline (0, width);
+        return getOutline(0, width);
     }
 
     /**
      * lookup the outline using the (3, 1) cmap, as specified in 32000-1:2008,
      * 9.6.6.4, when an Encoding is specified.
      *
-     * @param val a char.
+     * @param val   a char.
      * @param width a float.
      * @return GeneralPath
      */
-    protected synchronized GeneralPath getOutlineFrom31CMap (char val,
-                                                            float width) {
+    protected synchronized GeneralPath getOutlineFrom31CMap(final char val,
+                                                            final float width) {
         // find the cmaps
-        CmapTable cmap = (CmapTable) this.font.getTable ("cmap");
+        final CmapTable cmap = (CmapTable) this.font.getTable("cmap");
 
         if (cmap == null) {
             return null;
         }
 
         // find the (3, 1) cmap subtable (Microsoft Unicode)
-        CMap map = cmap.getCMap ((short) 3, (short) 1);
+        final CMap map = cmap.getCMap((short) 3, (short) 1);
         if (map == null) {
-        	return null;
+            return null;
         }
-        int idx = map.map (val);
+        final int idx = map.map(val);
         if (idx != 0) {
-            return getOutline (idx, width);
+            return getOutline(idx, width);
         }
 
         return null;
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get the outline of a character given the character name
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get the outline of a character given the character name
+     */
     @Override
-	protected synchronized GeneralPath getOutline (String name, float width) {
+    protected synchronized GeneralPath getOutline(final String name, final float width) {
         int idx;
-        PostTable post = (PostTable) this.font.getTable ("post");
+        final PostTable post = (PostTable) this.font.getTable("post");
         if (post != null) {
-            idx = post.getGlyphNameIndex (name);
+            idx = post.getGlyphNameIndex(name);
             if (idx != 0) {
-                return getOutline (idx, width);
+                return getOutline(idx, width);
             }
         }
 
-        Integer res = AdobeGlyphList.getGlyphNameIndex (name);
+        final Integer res = AdobeGlyphList.getGlyphNameIndex(name);
         if (res != null) {
             idx = res;
-            return getOutlineFrom31CMap ((char) idx, width);
+            return getOutlineFrom31CMap((char) idx, width);
         }
         return null;
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the outline of a character given the glyph id
      */
-    protected synchronized GeneralPath getOutline (int glyphId, float width) {
+    protected synchronized GeneralPath getOutline(final int glyphId, final float width) {
         // find the glyph itself
-        GlyfTable glyf = (GlyfTable) this.font.getTable ("glyf");
-        Glyf g = glyf.getGlyph (glyphId);
+        final GlyfTable glyf = (GlyfTable) this.font.getTable("glyf");
+        final Glyf g = glyf.getGlyph(glyphId);
 
         GeneralPath gp = null;
         if (g instanceof GlyfSimple) {
-            gp = renderSimpleGlyph ((GlyfSimple) g);
+            gp = renderSimpleGlyph((GlyfSimple) g);
         } else if (g instanceof GlyfCompound) {
-            gp = renderCompoundGlyph (glyf, (GlyfCompound) g);
+            gp = renderCompoundGlyph(glyf, (GlyfCompound) g);
         } else {
-            gp = new GeneralPath ();
+            gp = new GeneralPath();
         }
 
         // calculate the advance
-        HmtxTable hmtx = (HmtxTable) this.font.getTable ("hmtx");
-        float advance = hmtx.getAdvance (glyphId) / this.unitsPerEm;
+        final HmtxTable hmtx = (HmtxTable) this.font.getTable("hmtx");
+        final float advance = hmtx.getAdvance(glyphId) / this.unitsPerEm;
 
         // scale the glyph to match the desired advance
-        float widthfactor = width / advance;
+        final float widthfactor = width / advance;
 
-		// the base transform scales the glyph to 1x1
-		AffineTransform at = AffineTransform.getScaleInstance(1 / this.unitsPerEm, 1 / this.unitsPerEm);
-		if (advance != 0) {
-			at.concatenate(AffineTransform.getScaleInstance(widthfactor, 1));
-		}
+        // the base transform scales the glyph to 1x1
+        final AffineTransform at = AffineTransform.getScaleInstance(1 / this.unitsPerEm, 1 / this.unitsPerEm);
+        if (advance != 0) {
+            at.concatenate(AffineTransform.getScaleInstance(widthfactor, 1));
+        }
 
-        gp.transform (at);
+        gp.transform(at);
 
         return gp;
     }
@@ -265,35 +263,35 @@ public class TTFFont extends OutlineFont {
      * Render a simple glyf
      *
      * @param g a {@link org.loboevolution.pdfview.font.ttf.GlyfSimple} object.
-     * @return a {@link java.awt.geom.GeneralPath} object.
+     * @return a {@link GeneralPath} object.
      */
-    protected GeneralPath renderSimpleGlyph (GlyfSimple g) {
+    protected GeneralPath renderSimpleGlyph(final GlyfSimple g) {
         // the current contour
         int curContour = 0;
 
         // the render state
-        RenderState rs = new RenderState();
-        rs.gp = new GeneralPath ();
+        final RenderState rs = new RenderState();
+        rs.gp = new GeneralPath();
 
-        for (int i = 0; i < g.getNumPoints (); i++) {
-            PointRec rec = new PointRec (g, i);
+        for (int i = 0; i < g.getNumPoints(); i++) {
+            final PointRec rec = new PointRec(g, i);
 
             if (rec.onCurve) {
-                addOnCurvePoint (rec, rs);
+                addOnCurvePoint(rec, rs);
             } else {
-                addOffCurvePoint (rec, rs);
+                addOffCurvePoint(rec, rs);
             }
 
             // see if we just ended a contour
-            if (i == g.getContourEndPoint (curContour)) {
+            if (i == g.getContourEndPoint(curContour)) {
                 curContour++;
 
                 if (rs.firstOff != null) {
-                    addOffCurvePoint (rs.firstOff, rs);
+                    addOffCurvePoint(rs.firstOff, rs);
                 }
 
                 if (rs.firstOn != null) {
-                    addOnCurvePoint (rs.firstOn, rs);
+                    addOnCurvePoint(rs.firstOn, rs);
                 }
 
                 rs.firstOn = null;
@@ -309,60 +307,64 @@ public class TTFFont extends OutlineFont {
      * Render a compound glyf
      *
      * @param glyf a {@link org.loboevolution.pdfview.font.ttf.GlyfTable} object.
-     * @param g a {@link org.loboevolution.pdfview.font.ttf.GlyfCompound} object.
-     * @return a {@link java.awt.geom.GeneralPath} object.
+     * @param g    a {@link org.loboevolution.pdfview.font.ttf.GlyfCompound} object.
+     * @return a {@link GeneralPath} object.
      */
-    protected GeneralPath renderCompoundGlyph (GlyfTable glyf, GlyfCompound g) {
-        GeneralPath gp = new GeneralPath ();
+    protected GeneralPath renderCompoundGlyph(final GlyfTable glyf, final GlyfCompound g) {
+        final GeneralPath gp = new GeneralPath();
 
-        for (int i = 0; i < g.getNumComponents (); i++) {
+        for (int i = 0; i < g.getNumComponents(); i++) {
             // find and render the component glyf
-            Glyf gl = glyf.getGlyph (g.getGlyphIndex (i));
+            final Glyf gl = glyf.getGlyph(g.getGlyphIndex(i));
             GeneralPath path = null;
             if (gl instanceof GlyfSimple) {
-                path = renderSimpleGlyph ((GlyfSimple) gl);
+                path = renderSimpleGlyph((GlyfSimple) gl);
             } else if (gl instanceof GlyfCompound) {
-                path = renderCompoundGlyph (glyf, (GlyfCompound) gl);
+                path = renderCompoundGlyph(glyf, (GlyfCompound) gl);
             } else {
-                throw new RuntimeException (
-                        "Unsupported glyph type " + gl.getClass ().getCanonicalName ());
+                throw new RuntimeException(
+                        "Unsupported glyph type " + gl.getClass().getCanonicalName());
             }
 
             // multiply the translations by units per em
-            double[] matrix = g.getTransform (i);
+            final double[] matrix = g.getTransform(i);
 
             // transform the path
-            path.transform (new AffineTransform (matrix));
+            path.transform(new AffineTransform(matrix));
 
             // add it to the global path
-            gp.append (path, false);
+            gp.append(path, false);
         }
 
         return gp;
     }
 
-    /** add a point on the curve */
-    private void addOnCurvePoint (PointRec rec, RenderState rs) {
+    /**
+     * add a point on the curve
+     */
+    private void addOnCurvePoint(final PointRec rec, final RenderState rs) {
         // if the point is on the curve, either move to it,
         // or draw a line from the previous point
         if (rs.firstOn == null) {
             rs.firstOn = rec;
-            rs.gp.moveTo (rec.x, rec.y);
+            rs.gp.moveTo(rec.x, rec.y);
         } else if (rs.prevOff != null) {
-            rs.gp.quadTo (rs.prevOff.x, rs.prevOff.y, rec.x, rec.y);
+            rs.gp.quadTo(rs.prevOff.x, rs.prevOff.y, rec.x, rec.y);
             rs.prevOff = null;
         } else {
-            rs.gp.lineTo (rec.x, rec.y);
+            rs.gp.lineTo(rec.x, rec.y);
         }
     }
 
-    /** add a point off the curve */
-    private void addOffCurvePoint (PointRec rec, RenderState rs) {
+    /**
+     * add a point off the curve
+     */
+    private void addOffCurvePoint(final PointRec rec, final RenderState rs) {
         if (rs.prevOff != null) {
-            PointRec oc = new PointRec ((rec.x + rs.prevOff.x) / 2,
+            final PointRec oc = new PointRec((rec.x + rs.prevOff.x) / 2,
                     (rec.y + rs.prevOff.y) / 2,
                     true);
-            addOnCurvePoint (oc, rs);
+            addOnCurvePoint(oc, rs);
         } else if (rs.firstOn == null) {
             rs.firstOff = rec;
         }
@@ -384,7 +386,9 @@ public class TTFFont extends OutlineFont {
 
     }
 
-    /** a point on the stack of points */
+    /**
+     * a point on the stack of points
+     */
     static class PointRec {
 
         final int x;
@@ -393,16 +397,16 @@ public class TTFFont extends OutlineFont {
 
         final boolean onCurve;
 
-        public PointRec (int x, int y, boolean onCurve) {
+        public PointRec(final int x, final int y, final boolean onCurve) {
             this.x = x;
             this.y = y;
             this.onCurve = onCurve;
         }
 
-        public PointRec (GlyfSimple g, int idx) {
-            this.x = g.getXCoord (idx);
-            this.y = g.getYCoord (idx);
-            this.onCurve = g.onCurve (idx);
+        public PointRec(final GlyfSimple g, final int idx) {
+            this.x = g.getXCoord(idx);
+            this.y = g.getYCoord(idx);
+            this.onCurve = g.onCurve(idx);
         }
     }
 }

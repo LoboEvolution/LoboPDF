@@ -1,30 +1,36 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
+package main.java.org.loboevolution.pdfview;
 
 import java.awt.geom.Rectangle2D;
 
 /**
  * The abstract superclass of all drawing commands for a PDFPage.
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
 public abstract class PDFCmd {
 
@@ -32,22 +38,22 @@ public abstract class PDFCmd {
      * mark the page or change the graphics state
      *
      * @param state the current graphics state;  may be modified during
-     * execution.
+     *              execution.
      * @return the region of the page made dirty by executing this command
-     *         or null if no region was touched.  Note this value should be
-     *         in the coordinates of the image touched, not the page.
+     * or null if no region was touched.  Note this value should be
+     * in the coordinates of the image touched, not the page.
      */
     public abstract Rectangle2D execute(PDFRenderer state);
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * a human readable representation of this command
      */
     @Override
     public String toString() {
-        String name = getClass().getName();
-        int lastDot = name.lastIndexOf('.');
+        final String name = getClass().getName();
+        final int lastDot = name.lastIndexOf('.');
         if (lastDot >= 0) {
             return name.substring(lastDot + 1);
         } else {
@@ -58,7 +64,7 @@ public abstract class PDFCmd {
     /**
      * the details of this command
      *
-     * @return a {@link java.lang.String} object.
+     * @return a {@link String} object.
      */
     public String getDetails() {
         return super.toString();

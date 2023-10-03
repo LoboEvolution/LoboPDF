@@ -1,22 +1,34 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.font;
+package main.java.org.loboevolution.pdfview.font;
+
+import lombok.extern.slf4j.Slf4j;
+import org.loboevolution.pdfview.PDFDebugger;
+import org.loboevolution.pdfview.PDFFile;
+import org.loboevolution.pdfview.PDFObject;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
@@ -26,54 +38,55 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Logger;
-
-import org.loboevolution.pdfview.PDFDebugger;
-import org.loboevolution.pdfview.PDFFile;
-import org.loboevolution.pdfview.PDFObject;
 
 /**
  * A representation, with parser, of an Adobe Type 1 font.
- *
  * Author Mike Wessler
-  *
  */
+@Slf4j
 public class Type1Font extends OutlineFont {
-
-	private static final Logger logger = Logger.getLogger(Type1Font.class.getName());
+    /**
+     * the Type1 stack of command values
+     */
+    final float[] stack = new float[100];
+    /**
+     * the stack of postscript commands (used by callothersubr)
+     */
+    final float[] psStack = new float[3];
     String[] chr2name;
     int password;
     byte[][] subrs;
     int lenIV;
-    Map<String,Object> name2outline;
-    Map<String,FlPoint> name2width;
+    Map<String, Object> name2outline;
+    Map<String, FlPoint> name2width;
     AffineTransform at;
-    /** the Type1 stack of command values */
-    final float[] stack = new float[100];
-    /** the current position in the Type1 stack */
+    /**
+     * the current position in the Type1 stack
+     */
     int sloc = 0;
-    /** the stack of postscript commands (used by callothersubr) */
-    final float[] psStack = new float[3];
-    /** the current position in the postscript stack */
+    /**
+     * the current position in the postscript stack
+     */
     int psLoc = 0;
+    int callcount = 0;
 
     /**
      * create a new Type1Font based on a font data stream and an encoding.
      *
-     * @param baseName the postscript name of this font
-     * @param src the Font object as a stream with a dictionary
+     * @param baseName   the postscript name of this font
+     * @param src        the Font object as a stream with a dictionary
      * @param descriptor the descriptor for this font
-     * @throws java.io.IOException if any.
+     * @throws IOException if any.
      */
-    public Type1Font(String baseName, PDFObject src,
-            PDFFontDescriptor descriptor) throws IOException {
+    public Type1Font(final String baseName, final PDFObject src,
+                     final PDFFontDescriptor descriptor) throws IOException {
         super(baseName, src, descriptor);
 
         if (descriptor != null && descriptor.getFontFile() != null) {
             // parse that file, filling name2outline and chr2name
-            int start = descriptor.getFontFile().getDictRef("Length1").getIntValue();
-            int len = descriptor.getFontFile().getDictRef("Length2").getIntValue();
-            byte[] font = descriptor.getFontFile().getStream();
+            final int start = descriptor.getFontFile().getDictRef("Length1").getIntValue();
+            final int len = descriptor.getFontFile().getDictRef("Length2").getIntValue();
+            final byte[] font = descriptor.getFontFile().getStream();
 
             parseFont(font, start, len);
         }
@@ -82,17 +95,17 @@ public class Type1Font extends OutlineFont {
     /**
      * Read a font from it's data, start position and length
      *
-     * @param font an array of {@link byte} objects.
+     * @param font  an array of {@link byte} objects.
      * @param start a int.
-     * @param len a int.
+     * @param len   a int.
      */
-    protected void parseFont(byte[] font, int start, int len) {
+    protected void parseFont(final byte[] font, final int start, final int len) {
         this.name2width = new HashMap<>();
 
         byte[] data = null;
 
         if (isASCII(font, start)) {
-            byte[] bData = readASCII(font, start, start + len);
+            final byte[] bData = readASCII(font, start, start + len);
             data = decrypt(bData, 0, bData.length, 55665, 4);
         } else {
             data = decrypt(font, start, start + len, 55665, 4);
@@ -100,8 +113,8 @@ public class Type1Font extends OutlineFont {
 
         // encoding is in cleartext area
         this.chr2name = readEncoding(font);
-        int lenIVLoc = findSlashName(data, "lenIV");
-        PSParser psp = new PSParser(data, 0);
+        final int lenIVLoc = findSlashName(data, "lenIV");
+        final PSParser psp = new PSParser(data, 0);
         if (lenIVLoc < 0) {
             this.lenIV = 4;
         } else {
@@ -109,30 +122,31 @@ public class Type1Font extends OutlineFont {
             this.lenIV = Integer.parseInt(psp.readThing());
         }
         this.password = 4330;
-        int matrixloc = findSlashName(font, "FontMatrix");
+        final int matrixloc = findSlashName(font, "FontMatrix");
         if (matrixloc < 0) {
             PDFDebugger.debug("No FontMatrix!");
             this.at = new AffineTransform(0.001f, 0, 0, 0.001f, 0, 0);
         } else {
-            PSParser psp2 = new PSParser(font, matrixloc + 11);
+            final PSParser psp2 = new PSParser(font, matrixloc + 11);
             // read [num num num num num num]
-            float[] xf = psp2.readArray(6);
+            final float[] xf = psp2.readArray(6);
             this.at = new AffineTransform(xf);
         }
 
         this.subrs = readSubrs(data);
         this.name2outline = new TreeMap<>(readChars(data));
-    // at this point, name2outline holds name -> byte[].
+        // at this point, name2outline holds name -> byte[].
     }
 
     /**
      * parse the encoding portion of the font definition
+     *
      * @param d the font definition stream
      * @return an array of the glyphs corresponding to each byte
      */
-    private String[] readEncoding(byte[] d) {
-        byte[][] ary = readArray(d, "Encoding", "def");
-        String[] res = new String[256];
+    private String[] readEncoding(final byte[] d) {
+        final byte[][] ary = readArray(d, "Encoding", "def");
+        final String[] res = new String[256];
         for (int i = 0; i < ary.length; i++) {
             if (ary[i] != null) {
                 if (ary[i][0] == '/') {
@@ -149,10 +163,11 @@ public class Type1Font extends OutlineFont {
 
     /**
      * read the subroutines out of the font definition
+     *
      * @param d the font definition stream
      * @return an array of the subroutines, each as a byte array.
      */
-    private byte[][] readSubrs(byte[] d) {
+    private byte[][] readSubrs(final byte[] d) {
         return readArray(d, "Subrs", "index");
     }
 
@@ -163,12 +178,13 @@ public class Type1Font extends OutlineFont {
      * definition without doing any postscript.  It's actually looking
      * for things that look like "dup <i>id</i> <i>elt</i> put", and
      * placing the <i>elt</i> at the <i>i</i>th position in the array.
-     * @param d the font definition stream
+     *
+     * @param d   the font definition stream
      * @param key the name of the array
      * @param end a string that appears at the end of the array
      * @return an array consisting of a byte array for each entry
      */
-    private byte[][] readArray(byte[] d, String key, String end) {
+    private byte[][] readArray(final byte[] d, final String key, final String end) {
         int i = findSlashName(d, key);
         if (i < 0) {
             // not found.
@@ -176,35 +192,35 @@ public class Type1Font extends OutlineFont {
         }
         // now find things that look like "dup id elt put"
         // end at "def"
-        PSParser psp = new PSParser(d, i);
+        final PSParser psp = new PSParser(d, i);
         String type = psp.readThing();     // read the key (i is the start of the key)
         double val;
         type = psp.readThing();
         if (type.equals("StandardEncoding")) {
-            byte[][] stdenc = new byte[FontSupport.standardEncoding.length][];
+            final byte[][] stdenc = new byte[FontSupport.standardEncoding.length][];
             for (i = 0; i < stdenc.length; i++) {
                 stdenc[i] = FontSupport.getName(FontSupport.standardEncoding[i]).getBytes();
             }
             return stdenc;
         }
-        int len = Integer.parseInt(type);
-        byte[][] out = new byte[len][];
+        final int len = Integer.parseInt(type);
+        final byte[][] out = new byte[len][];
         byte[] line;
         while (true) {
-            String s = psp.readThing();
+            final String s = psp.readThing();
             if (s.equals("dup")) {
-                String thing = psp.readThing();
+                final String thing = psp.readThing();
                 int id = 0;
                 try {
                     id = Integer.parseInt(thing);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     break;
                 }
-                String elt = psp.readThing();
+                final String elt = psp.readThing();
                 line = elt.getBytes();
                 if (Character.isDigit(elt.charAt(0))) {
-                    int hold = Integer.parseInt(elt);
-                    String special = psp.readThing();
+                    final int hold = Integer.parseInt(elt);
+                    final String special = psp.readThing();
                     if (special.equals("-|") || special.equals("RD")) {
                         psp.setLoc(psp.getLoc() + 1);
                         line = psp.getNEncodedBytes(hold, this.password, this.lenIV);
@@ -220,26 +236,29 @@ public class Type1Font extends OutlineFont {
 
     /**
      * decrypt an array using the Adobe Type 1 Font decryption algorithm.
-     * @param d the input array of bytes
+     *
+     * @param d     the input array of bytes
      * @param start where in the array to start decoding
-     * @param end where in the array to stop decoding
-     * @param key the decryption key
-     * @param skip how many bytes to skip initially
+     * @param end   where in the array to stop decoding
+     * @param key   the decryption key
+     * @param skip  how many bytes to skip initially
      * @return the decrypted bytes.  The length of this array will be
      * (start-end-skip) bytes long
      */
-    private byte[] decrypt(byte[] d, int start, int end, int key, int skip) {
+    private byte[] decrypt(final byte[] d, final int start, final int end, final int key, final int skipdecrypt) {
+        int skip = skipdecrypt;
+
         if (end - start - skip < 0) {
             skip = 0;
         }
-        byte[] o = new byte[end - start - skip];
+        final byte[] o = new byte[end - start - skip];
         int r = key;
         int ipos;
-        int c1 = 52845;
-        int c2 = 22719;
+        final int c1 = 52845;
+        final int c2 = 22719;
         for (ipos = start; ipos < end; ipos++) {
-            int c = d[ipos] & 0xff;
-            int p = (c ^ (r >> 8)) & 0xff;
+            final int c = d[ipos] & 0xff;
+            final int p = (c ^ (r >> 8)) & 0xff;
             r = ((c + r) * c1 + c2) & 0xffff;
             if (ipos - start - skip >= 0) {
                 o[ipos - start - skip] = (byte) p;
@@ -251,20 +270,20 @@ public class Type1Font extends OutlineFont {
     /**
      * Read data formatted as ASCII strings as binary data
      *
-     * @param data the data, formatted as ASCII strings
+     * @param data  the data, formatted as ASCII strings
      * @param start where in the array to start decrypting
-     * @param end where in the array to stop decrypting
+     * @param end   where in the array to stop decrypting
      */
-    private byte[] readASCII(byte[] data, int start, int end) {
+    private byte[] readASCII(final byte[] data, final int start, final int end) {
         // each byte of output is derived from one character (two bytes) of
         // input
-        byte[] o = new byte[(end - start) / 2];
+        final byte[] o = new byte[(end - start) / 2];
 
         int count = 0;
         int bit = 0;
 
         for (int loc = start; loc < end; loc++) {
-            char c = (char) (data[loc] & 0xff);
+            final char c = (char) (data[loc] & 0xff);
             byte b = (byte) 0;
 
             if (c >= '0' && c <= '9') {
@@ -289,17 +308,17 @@ public class Type1Font extends OutlineFont {
         return o;
     }
 
-    /** 
+    /**
      * Determine if data is in ASCII or binary format.  According to the spec,
      * if any of the first 4 bytes are not character codes ('0' - '9' or
      * 'A' - 'F' or 'a' - 'f'), then the data is binary.  Otherwise it is
      * ASCII
      */
-    private boolean isASCII(byte[] data, int start) {
+    private boolean isASCII(final byte[] data, final int start) {
         // look at the first 4 bytes
         for (int i = start; i < start + 4; i++) {
             // get the byte as a character
-            char c = (char) (data[i] & 0xff);
+            final char c = (char) (data[i] & 0xff);
 
             if (c >= '0' && c <= '9') {
                 continue;
@@ -318,110 +337,13 @@ public class Type1Font extends OutlineFont {
     }
 
     /**
-     * PostScript reader (not a parser, as the name would seem to indicate).
-     */
-    class PSParser {
-
-        final byte[] data;
-        int loc;
-
-        /**
-         * create a PostScript reader given some data and an initial offset
-         * into that data.
-         * @param data the bytes of the postscript information
-         * @param start an initial offset into the data
-         */
-        public PSParser(byte[] data, int start) {
-            this.data = data;
-            this.loc = start;
-        }
-
-        /**
-         * get the next postscript "word".  This is basically the next
-         * non-whitespace block between two whitespace delimiters.
-         * This means that something like " [2 4 53]" will produce
-         * three items, while " [2 4 56 ]" will produce four.
-         */
-        public String readThing() {
-            // skip whitespace
-            while (PDFFile.isWhiteSpace(this.data[this.loc])) {
-                this.loc++;
-            }
-            // read thing
-            int start = this.loc;
-            while (!PDFFile.isWhiteSpace(this.data[this.loc])) {
-                this.loc++;
-                if (!PDFFile.isRegularCharacter(this.data[this.loc])) {
-                    break;  // leave with the delimiter included
-                }
-            }
-            String s = new String(this.data, start, this.loc - start);
-            return s;
-        }
-
-        /**
-         * read a set of numbers from the input.  This method doesn't
-         * pay any attention to "[" or "]" delimiters, and reads any
-         * non-numeric items as the number 0.
-         * @param count the number of items to read
-         * @return an array of count floats
-         */
-        public float[] readArray(int count) {
-            float[] ary = new float[count];
-            int idx = 0;
-            while (idx < count) {
-                String thing = readThing();
-                if (thing.charAt(0) == '[') {
-                    thing = thing.substring(1);
-                }
-                if (thing.endsWith("]")) {
-                    thing = thing.substring(0, thing.length() - 1);
-                }
-                if (thing.length() > 0) {
-                    ary[idx++] = Float.parseFloat(thing);
-                }
-            }
-            return ary;
-        }
-
-        /**
-         * get the current location within the input stream
-         */
-        public int getLoc() {
-            return this.loc;
-        }
-
-        /**
-         * set the current location within the input stream
-         */
-        public void setLoc(int loc) {
-            this.loc = loc;
-        }
-
-        /**
-         * treat the next n bytes of the input stream as encoded
-         * information to be decrypted.
-         * @param n the number of bytes to decrypt
-         * @param key the decryption key
-         * @param skip the number of bytes to skip at the beginning of the
-         * decryption
-         * @return an array of decrypted bytes.  The length of the array
-         * will be n-skip.
-         */
-        public byte[] getNEncodedBytes(int n, int key, int skip) {
-            byte[] result = decrypt(this.data, this.loc, this.loc + n, key, skip);
-            this.loc += n;
-            return result;
-        }
-    }
-
-    /**
      * get the index into the byte array of a slashed name, like "/name".
-     * @param d the search array
+     *
+     * @param d    the search array
      * @param name the name to look for, without the initial /
      * @return the index of the first occurance of /name in the array.
      */
-    private int findSlashName(byte[] d, String name) {
+    private int findSlashName(final byte[] d, final String name) {
         int i;
         for (i = 0; i < d.length; i++) {
             if (d[i] == '/') {
@@ -443,30 +365,31 @@ public class Type1Font extends OutlineFont {
 
     /**
      * get the character definitions of the font.
+     *
      * @param d the font data
      * @return a HashMap that maps string glyph names to byte arrays of
      * decoded font data.
      */
-    private Map<String,byte[]> readChars(byte[] d) {
+    private Map<String, byte[]> readChars(final byte[] d) {
         // skip thru data until we find "/"+key
-        HashMap<String,byte[]> hm = new HashMap<>();
-        int i = findSlashName(d, "CharStrings");
+        final HashMap<String, byte[]> hm = new HashMap<>();
+        final int i = findSlashName(d, "CharStrings");
         if (i < 0) {
             // not found
             return hm;
         }
-        PSParser psp = new PSParser(d, i);
+        final PSParser psp = new PSParser(d, i);
         // read /name len -| [len bytes] |-
         // until "end"
         while (true) {
-            String s = psp.readThing();
-            char c = s.charAt(0);
+            final String s = psp.readThing();
+            final char c = s.charAt(0);
             if (c == '/') {
-                int len = Integer.parseInt(psp.readThing());
-                String go = psp.readThing();  // it's -| or RD
+                final int len = Integer.parseInt(psp.readThing());
+                final String go = psp.readThing();  // it's -| or RD
                 if (go.equals("-|") || go.equals("RD")) {
                     psp.setLoc(psp.getLoc() + 1);
-                    byte[] line = psp.getNEncodedBytes(len, this.password, this.lenIV);
+                    final byte[] line = psp.getNEncodedBytes(len, this.password, this.lenIV);
                     hm.put(s.substring(1), line);
                 }
             } else if (s.equals("end")) {
@@ -486,22 +409,22 @@ public class Type1Font extends OutlineFont {
         }
         return val;
     }
-    int callcount = 0;
 
     /**
      * parse glyph data into a GeneralPath, and return the advance width.
      * The working point is passed in as a parameter in order to allow
      * recursion.
-     * @param cs the decrypted glyph data
-     * @param gp a GeneralPath into which the glyph shape will be stored
-     * @param pt a FlPoint object that will be used to generate the path
+     *
+     * @param cs  the decrypted glyph data
+     * @param gp  a GeneralPath into which the glyph shape will be stored
+     * @param pt  a FlPoint object that will be used to generate the path
      * @param wid a FlPoint into which the advance width will be placed.
      */
-    private void parse(byte[] cs, GeneralPath gp, FlPoint pt, FlPoint wid) {
+    private void parse(final byte[] cs, final GeneralPath gp, final FlPoint pt, final FlPoint wid) {
         int loc = 0;
         float x1, x2, x3, y1, y2, y3;
         boolean flexMode = false;
-        float[] flexArray = new float[16];
+        final float[] flexArray = new float[16];
         int flexPt = 0;
         while (loc < cs.length) {
             int v = (cs[loc++]) & 0xff;
@@ -529,14 +452,13 @@ public class Type1Font extends OutlineFont {
                         this.sloc = 0;
                         break;
                     case 4:   // y vmoveto
-                		pt.y += pop();
-                    	if (flexMode) {
-                    		flexArray[flexPt++] = pt.x;
-                    		flexArray[flexPt++] = pt.y;
-                    	}
-                    	else{
-                    		gp.moveTo(pt.x, pt.y);
-                    	}
+                        pt.y += pop();
+                        if (flexMode) {
+                            flexArray[flexPt++] = pt.x;
+                            flexArray[flexPt++] = pt.y;
+                        } else {
+                            gp.moveTo(pt.x, pt.y);
+                        }
                         this.sloc = 0;
                         break;
                     case 5:   // x y rlineto
@@ -546,13 +468,13 @@ public class Type1Font extends OutlineFont {
                         this.sloc = 0;
                         break;
                     case 6:   // x hlineto
-                    	pt.x += pop();
+                        pt.x += pop();
                         gp.lineTo(pt.x, pt.y);
                         this.sloc = 0;
                         break;
                     case 7:   // y vlineto
-                    	pt.y += pop();
-                    	gp.lineTo(pt.x, pt.y);
+                        pt.y += pop();
+                        gp.lineTo(pt.x, pt.y);
                         this.sloc = 0;
                         break;
                     case 8:   // x1 y1 x2 y2 x3 y3 rcurveto
@@ -566,7 +488,7 @@ public class Type1Font extends OutlineFont {
                                 pt.x + x1 + x2, pt.y + y1 + y2,
                                 pt.x + x1 + x2 + x3, pt.y + y1 + y2 + y3);
                         pt.x += x1 + x2 + x3;
-                        pt.y += y1 + y2 + y3;                        
+                        pt.y += y1 + y2 + y3;
                         this.sloc = 0;
                         break;
                     case 9:   // closepath
@@ -574,38 +496,35 @@ public class Type1Font extends OutlineFont {
                         this.sloc = 0;
                         break;
                     case 10:  // n callsubr
-                        int n = (int) pop();
+                        final int n = (int) pop();
                         if (n == 1) {
-                        	flexMode = true;
-                        	flexPt = 0;
-                        	this.sloc = 0;
-                        	break;
+                            flexMode = true;
+                            flexPt = 0;
+                            this.sloc = 0;
+                            break;
                         }
                         if (n == 0) {
-                        	if (flexPt != 14) {
-                        	    PDFDebugger.debug("There must be 14 flex entries!");
-                        	}
-                        	else {
-                        		gp.curveTo(flexArray[2], flexArray[3], flexArray[4], 
-                        				flexArray[5],
-                        				flexArray[6], flexArray[7]);
-                        		gp.curveTo(flexArray[8], flexArray[9], flexArray[10], 
-                        				flexArray[11],
-                        				flexArray[12], flexArray[13]);
-                        		flexMode = false;
-                        		this.sloc = 0;
-                        		//logger.info("End Flex " + flexPt);
-                        		break;
-                        	}
+                            if (flexPt != 14) {
+                                PDFDebugger.debug("There must be 14 flex entries!");
+                            } else {
+                                gp.curveTo(flexArray[2], flexArray[3], flexArray[4],
+                                        flexArray[5],
+                                        flexArray[6], flexArray[7]);
+                                gp.curveTo(flexArray[8], flexArray[9], flexArray[10],
+                                        flexArray[11],
+                                        flexArray[12], flexArray[13]);
+                                flexMode = false;
+                                this.sloc = 0;
+                                break;
+                            }
                         }
                         if (n == 2) {
-                        	if (!flexMode) {
-                        	    PDFDebugger.debug("Flex mode assumed");
-                        	} 
-                        	else {
-                        		this.sloc = 0;
-                        		break;
-                        	}
+                            if (!flexMode) {
+                                PDFDebugger.debug("Flex mode assumed");
+                            } else {
+                                this.sloc = 0;
+                                break;
+                            }
                         }
                         if (this.subrs[n] == null) {
                             PDFDebugger.debug("No subroutine #" + n);
@@ -624,10 +543,10 @@ public class Type1Font extends OutlineFont {
                     case 12:  // ext...
                         v = (cs[loc++]) & 0xff;
                         if (v == 6) {  // s x y a b seac
-                        char a = (char) pop();
-                            char b = (char) pop();
-                            float y = pop();
-                            float x = pop();
+                            final char a = (char) pop();
+                            final char b = (char) pop();
+                            final float y = pop();
+                            final float x = pop();
                             buildAccentChar(x, y, a, b, gp);
                             this.sloc = 0;
                         } else if (v == 7) {  // x y w h sbw
@@ -637,8 +556,8 @@ public class Type1Font extends OutlineFont {
                             pt.x = pop();
                             this.sloc = 0;
                         } else if (v == 12) {  // a b div -> a/b
-                            float b = pop();
-                            float a = pop();
+                            final float b = pop();
+                            final float a = pop();
                             this.stack[this.sloc++] = a / b;
                         } else if (v == 33) {  // a b setcurrentpoint
                             pt.y = pop();
@@ -652,8 +571,8 @@ public class Type1Font extends OutlineFont {
                         } else if (v == 2) {  // hstem3
                             this.sloc = 0;
                         } else if (v == 16) {  // n callothersubr
-                            int cn = (int) pop();
-                            int countargs = (int) pop();
+                            final int cn = (int) pop();
+                            final int countargs = (int) pop();
 
                             switch (cn) {
                                 case 0:
@@ -700,26 +619,24 @@ public class Type1Font extends OutlineFont {
                     case 20:  // x
                         throw new RuntimeException("Bad command (" + v + ")");
                     case 21:  // x y rmoveto
-                		pt.y += pop();
-                		pt.x += pop();
-                    	if (flexMode) {
-                    		flexArray[flexPt++] = pt.x;
-                    		flexArray[flexPt++] = pt.y;
-                    	}
-                    	else{
-                    		gp.moveTo(pt.x, pt.y);
-                    	}
-                		this.sloc = 0;
+                        pt.y += pop();
+                        pt.x += pop();
+                        if (flexMode) {
+                            flexArray[flexPt++] = pt.x;
+                            flexArray[flexPt++] = pt.y;
+                        } else {
+                            gp.moveTo(pt.x, pt.y);
+                        }
+                        this.sloc = 0;
                         break;
                     case 22:  // x hmoveto
-                		pt.x += pop();
-                    	if (flexMode) {
-                    		flexArray[flexPt++] = pt.x;
-                    		flexArray[flexPt++] = pt.y;
-                    	}
-                    	else {
-                    		gp.moveTo(pt.x, pt.y);
-                    	}
+                        pt.x += pop();
+                        if (flexMode) {
+                            flexArray[flexPt++] = pt.x;
+                            flexArray[flexPt++] = pt.y;
+                        } else {
+                            gp.moveTo(pt.x, pt.y);
+                        }
                         this.sloc = 0;
                         break;
                     case 23:  // x
@@ -757,7 +674,7 @@ public class Type1Font extends OutlineFont {
                         this.sloc = 0;
                         break;
                     default:
-            			break;
+                        break;
                 }
             }
         }
@@ -765,15 +682,16 @@ public class Type1Font extends OutlineFont {
 
     /**
      * build an accented character out of two pre-defined glyphs.
-     * @param x the x offset of the accent relativ to the sidebearing of the base char
-     * @param y the y offset of the accent relativ to the sidebearing of the base char
-     * @param a the index of the accent glyph
-     * @param b the index of the base glyph
+     *
+     * @param x  the x offset of the accent relativ to the sidebearing of the base char
+     * @param y  the y offset of the accent relativ to the sidebearing of the base char
+     * @param a  the index of the accent glyph
+     * @param b  the index of the base glyph
      * @param gp the GeneralPath into which the combined glyph will be
-     * written.
+     *           written.
      */
-    private void buildAccentChar(float x, float y, char a, char b,
-            GeneralPath gp) {
+    private void buildAccentChar(final float x, final float y, final char a, final char b,
+                                 final GeneralPath gp) {
         // get the outline of the accent
         GeneralPath pathA = getOutline(a, getWidth(a, null));
         // don't manipulate the original glyph
@@ -787,16 +705,16 @@ public class Type1Font extends OutlineFont {
             // and the definition of the seac-Command in http://partners.adobe.com/public/developer/en/font/T1_SPEC.PDF
             final AffineTransform xformA2 = AffineTransform.getTranslateInstance(0, y);
             pathA.transform(xformA2);
-        } catch (NoninvertibleTransformException nte) {
+        } catch (final NoninvertibleTransformException nte) {
             pathA.transform(AffineTransform.getTranslateInstance(x, y));
         }
 
-        GeneralPath pathB = getOutline(b, getWidth(b, null));
+        final GeneralPath pathB = getOutline(b, getWidth(b, null));
 
         try {
-            AffineTransform xformB = this.at.createInverse();
+            final AffineTransform xformB = this.at.createInverse();
             pathB.transform(xformB);
-        } catch (NoninvertibleTransformException nte) {
+        } catch (final NoninvertibleTransformException nte) {
             // ignore
         }
 
@@ -806,14 +724,14 @@ public class Type1Font extends OutlineFont {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Get the width of a given character
-     *
+     * <p>
      * This method is overridden to work if the width array hasn't been
      * populated (as for one of the 14 base fonts)
      */
     @Override
-    public float getWidth(char code, String name) {
+    public float getWidth(final char code, final String name) {
         // we don't have first and last chars, so therefore no width array
         if (getFirstChar() == -1 || getLastChar() == -1) {
             String key = this.chr2name[code & 0xff];
@@ -830,7 +748,7 @@ public class Type1Font extends OutlineFont {
                     getOutline(key, 0);
                 }
 
-                FlPoint width = this.name2width.get(key);
+                final FlPoint width = this.name2width.get(key);
                 if (width != null) {
                     return width.x / getDefaultWidth();
                 }
@@ -846,10 +764,10 @@ public class Type1Font extends OutlineFont {
     /**
      * Decrypt a glyph stored in byte form
      */
-    private synchronized GeneralPath parseGlyph(byte[] cs, FlPoint advance,
-            AffineTransform at) {
-        GeneralPath gp = new GeneralPath();
-        FlPoint curpoint = new FlPoint();
+    private synchronized GeneralPath parseGlyph(final byte[] cs, final FlPoint advance,
+                                                final AffineTransform at) {
+        final GeneralPath gp = new GeneralPath();
+        final FlPoint curpoint = new FlPoint();
 
         this.sloc = 0;
         parse(cs, gp, curpoint, advance);
@@ -858,38 +776,38 @@ public class Type1Font extends OutlineFont {
         return gp;
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get a glyph outline by name
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get a glyph outline by name
+     */
     @Override
-	protected GeneralPath getOutline(String name, float width) {
-        // make sure we have a valid name
+    protected GeneralPath getOutline(final String namePath, final float width) {
+        String name = namePath;
         if (name == null || !this.name2outline.containsKey(name)) {
             name = ".notdef";
         }
 
         // get whatever is stored in name. Could be a GeneralPath, could be byte[]
-        Object obj = this.name2outline.get(name);
+        final Object obj = this.name2outline.get(name);
 
         // if it's a byte array, it needs to be parsed
         // otherwise, just return the path
         if (obj instanceof GeneralPath) {
             return (GeneralPath) obj;
         } else {
-            byte[] cs = (byte[]) obj;
-            FlPoint advance = new FlPoint();
+            final byte[] cs = (byte[]) obj;
+            final FlPoint advance = new FlPoint();
 
-            GeneralPath gp = parseGlyph(cs, advance, this.at);
+            final GeneralPath gp = parseGlyph(cs, advance, this.at);
 
             if (width != 0 && advance.x != 0) {
                 // scale the glyph to fit in the width
-                Point2D p = new Point2D.Float(advance.x, advance.y);
+                final Point2D p = new Point2D.Float(advance.x, advance.y);
                 this.at.transform(p, p);
 
-                double scale = width / p.getX();
-                AffineTransform xform = AffineTransform.getScaleInstance(scale, 1.0);
+                final double scale = width / p.getX();
+                final AffineTransform xform = AffineTransform.getScaleInstance(scale, 1.0);
                 gp.transform(xform);
             }
 
@@ -900,24 +818,125 @@ public class Type1Font extends OutlineFont {
         }
     }
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * Get a glyph outline by character code
-	 *
-	 * Note this method must always return an outline
-	 */
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Get a glyph outline by character code
+     * <p>
+     * Note this method must always return an outline
+     */
     @Override
-	protected GeneralPath getOutline(char src, float width) {
+    protected GeneralPath getOutline(final char src, final float width) {
         return getOutline(this.chr2name[src & 0xff], width);
     }
-    
+
     /**
      * <p>isName2OutlineFilled.</p>
      *
      * @return a boolean.
      */
     public boolean isName2OutlineFilled() {
-    	return (name2outline!=null) && !name2outline.isEmpty();
+        return (name2outline != null) && !name2outline.isEmpty();
+    }
+
+    /**
+     * PostScript reader (not a parser, as the name would seem to indicate).
+     */
+    class PSParser {
+
+        final byte[] data;
+        int loc;
+
+        /**
+         * create a PostScript reader given some data and an initial offset
+         * into that data.
+         *
+         * @param data  the bytes of the postscript information
+         * @param start an initial offset into the data
+         */
+        public PSParser(final byte[] data, final int start) {
+            this.data = data;
+            this.loc = start;
+        }
+
+        /**
+         * get the next postscript "word".  This is basically the next
+         * non-whitespace block between two whitespace delimiters.
+         * This means that something like " [2 4 53]" will produce
+         * three items, while " [2 4 56 ]" will produce four.
+         */
+        public String readThing() {
+            // skip whitespace
+            while (PDFFile.isWhiteSpace(this.data[this.loc])) {
+                this.loc++;
+            }
+            // read thing
+            final int start = this.loc;
+            while (!PDFFile.isWhiteSpace(this.data[this.loc])) {
+                this.loc++;
+                if (!PDFFile.isRegularCharacter(this.data[this.loc])) {
+                    break;  // leave with the delimiter included
+                }
+            }
+            final String s = new String(this.data, start, this.loc - start);
+            return s;
+        }
+
+        /**
+         * read a set of numbers from the input.  This method doesn't
+         * pay any attention to "[" or "]" delimiters, and reads any
+         * non-numeric items as the number 0.
+         *
+         * @param count the number of items to read
+         * @return an array of count floats
+         */
+        public float[] readArray(final int count) {
+            final float[] ary = new float[count];
+            int idx = 0;
+            while (idx < count) {
+                String thing = readThing();
+                if (thing.charAt(0) == '[') {
+                    thing = thing.substring(1);
+                }
+                if (thing.endsWith("]")) {
+                    thing = thing.substring(0, thing.length() - 1);
+                }
+                if (thing.length() > 0) {
+                    ary[idx++] = Float.parseFloat(thing);
+                }
+            }
+            return ary;
+        }
+
+        /**
+         * get the current location within the input stream
+         */
+        public int getLoc() {
+            return this.loc;
+        }
+
+        /**
+         * set the current location within the input stream
+         */
+        public void setLoc(final int loc) {
+            this.loc = loc;
+        }
+
+        /**
+         * treat the next n bytes of the input stream as encoded
+         * information to be decrypted.
+         *
+         * @param n    the number of bytes to decrypt
+         * @param key  the decryption key
+         * @param skip the number of bytes to skip at the beginning of the
+         *             decryption
+         * @return an array of decrypted bytes.  The length of the array
+         * will be n-skip.
+         */
+        public byte[] getNEncodedBytes(final int n, final int key, final int skip) {
+            final byte[] result = decrypt(this.data, this.loc, this.loc + n, key, skip);
+            this.loc += n;
+            return result;
+        }
     }
 }

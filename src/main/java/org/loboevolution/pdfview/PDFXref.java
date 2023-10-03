@@ -1,22 +1,29 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
+package main.java.org.loboevolution.pdfview;
 
 import java.lang.ref.SoftReference;
 
@@ -38,26 +45,25 @@ import java.lang.ref.SoftReference;
  * <p>
  * This is an unhappy state of affairs, and should be fixed.  Fortunatly,
  * the two uses have already been factored out as two different methods.
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
 public class PDFXref {
 
     private final int id;
     private final int generation;
     private final boolean compressed;
-    
+
     // this field is only used in PDFFile.objIdx
     private SoftReference<PDFObject> reference = null;
 
     /**
      * create a new PDFXref, given a parsed id and generation.
      *
-     * @param id a int.
+     * @param id  a int.
      * @param gen a int.
      */
-    public PDFXref(int id, int gen) {
+    public PDFXref(final int id, final int gen) {
         this.id = id;
         this.generation = gen;
         this.compressed = false;
@@ -66,11 +72,11 @@ public class PDFXref {
     /**
      * create a new PDFXref, given a parsed id, compressedObjId and index
      *
-     * @param id a int.
-     * @param gen a int.
+     * @param id         a int.
+     * @param gen        a int.
      * @param compressed a boolean.
      */
-    public PDFXref(int id, int gen, boolean compressed) {
+    public PDFXref(final int id, final int gen, final boolean compressed) {
         this.id = id;
         this.generation = gen;
         this.compressed = compressed;
@@ -82,7 +88,7 @@ public class PDFXref {
      *
      * @param line an array of {@link byte} objects.
      */
-    public PDFXref(byte[] line) {
+    public PDFXref(final byte[] line) {
         if (line == null) {
             this.id = -1;
             this.generation = -1;
@@ -158,19 +164,23 @@ public class PDFXref {
      *
      * @param obj a {@link org.loboevolution.pdfview.PDFObject} object.
      */
-    public void setObject(PDFObject obj) {
+    public void setObject(final PDFObject obj) {
         this.reference = new SoftReference<>(obj);
     }
-    
-	/** {@inheritDoc} */
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
-	public boolean equals(final Object obj) {
+    public boolean equals(final Object obj) {
         return (obj instanceof PDFXref) &&
-                ((PDFXref)obj).id == id &&
-                ((PDFXref)obj).generation == generation;
+                ((PDFXref) obj).id == id &&
+                ((PDFXref) obj).generation == generation;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return id ^ (generation << 8);

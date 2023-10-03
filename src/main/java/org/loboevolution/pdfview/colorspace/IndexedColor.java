@@ -1,46 +1,59 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview.colorspace;
-
-import java.awt.Color;
-import java.io.IOException;
+package main.java.org.loboevolution.pdfview.colorspace;
 
 import org.loboevolution.pdfview.PDFObject;
 import org.loboevolution.pdfview.PDFPaint;
 
+import java.awt.*;
+import java.io.IOException;
+
 /**
  * A PDFColorSpace for an IndexedColor model
- *
+ * <p>
  * Author Mike Wessler
-  *
  */
 public class IndexedColor extends PDFColorSpace {
 
     /**
-     * r,g,and b components of the color table as a single array, for
-     * Java's IndexColorModel */
-    protected byte[] finalcolors;
-    /** the color table */
-    Color[] table;
-    /** size of the color table */
+     * size of the color table
+     */
     final int count;
-    /** number of channels in the base Color Space (unused) */
+    /**
+     * r,g,and b components of the color table as a single array, for
+     * Java's IndexColorModel
+     */
+    protected byte[] finalcolors;
+    /**
+     * the color table
+     */
+    Color[] table;
+    /**
+     * number of channels in the base Color Space (unused)
+     */
     int nchannels = 1;
 
     /**
@@ -49,22 +62,23 @@ public class IndexedColor extends PDFColorSpace {
      * of the stream is interpreted as a color in the base ColorSpace, where
      * n is the number of components in that color space.
      *
-     * @param base the color space in which the data is interpreted
-     * @param count the number of colors in the table
+     * @param base   the color space in which the data is interpreted
+     * @param cnt    the number of colors in the table
      * @param stream a stream of bytes.  The number of bytes must be count*n,
-     * where n is the number of components in the base colorspace.
-     * @throws java.io.IOException if any.
+     *               where n is the number of components in the base colorspace.
+     * @throws IOException if any.
      */
-    public IndexedColor(PDFColorSpace base, int count, PDFObject stream) throws IOException {
+    public IndexedColor(final PDFColorSpace base, final int cnt, final PDFObject stream) throws IOException {
         super(null);
+        int count = cnt;
         count++;
         this.count = count;
-        byte[] data = stream.getStream();
+        final byte[] data = stream.getStream();
         this.nchannels = base.getNumComponents();
-        boolean offSized = (data.length / this.nchannels) < count;
+        final boolean offSized = (data.length / this.nchannels) < count;
         this.finalcolors = new byte[3 * count];
         this.table = new Color[count];
-        float[] comps = new float[this.nchannels];
+        final float[] comps = new float[this.nchannels];
         int loc = 0;
         int finalloc = 0;
         for (int i = 0; i < count; i++) {
@@ -86,9 +100,9 @@ public class IndexedColor extends PDFColorSpace {
      * create a new IndexColor PDFColorSpace based on a table of colors.
      *
      * @param table an array of colors
-     * @throws java.io.IOException if any.
+     * @throws IOException if any.
      */
-    public IndexedColor(Color[] table) throws IOException {
+    public IndexedColor(final Color[] table) throws IOException {
         super(null);
 
         this.count = table.length;
@@ -126,7 +140,7 @@ public class IndexedColor extends PDFColorSpace {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * get the number of components of this colorspace (1)
      */
     @Override
@@ -136,11 +150,11 @@ public class IndexedColor extends PDFColorSpace {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * get the color represented by the index.
      */
     @Override
-    public PDFPaint getPaint(float[] components) {
+    public PDFPaint getPaint(final float[] components) {
         return PDFPaint.getPaint(this.table[(int) components[0]]);
     }
 }

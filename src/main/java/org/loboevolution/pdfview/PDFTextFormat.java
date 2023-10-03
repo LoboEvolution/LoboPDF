@@ -1,71 +1,97 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
+package main.java.org.loboevolution.pdfview;
 
-import java.awt.Color;
+import org.loboevolution.pdfview.font.PDFFont;
+import org.loboevolution.pdfview.font.PDFGlyph;
+
+import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.util.List;
 
-import org.loboevolution.pdfview.font.PDFFont;
-import org.loboevolution.pdfview.font.PDFGlyph;
-
 /**
  * a class encapsulating the text state
- *
  * Author Mike Wessler
-  *
  */
 public class PDFTextFormat implements Cloneable {
-    /** character spacing */
-    private float tc = 0;
-    /** word spacing */
-    private float tw = 0;
-    /** horizontal scaling */
-    private float th = 1;
-    /** leading */
-    private float tl = 0;
-    /** rise amount */
-    private float tr = 0;
-    /** text mode */
-    private int tm = PDFShapeCmd.FILL;
-    /** text knockout */
-    private float tk = 0;
-    /** current matrix transform */
+    /**
+     * current matrix transform
+     */
     private final AffineTransform cur;
-    /** matrix transform at start of line */
-    private AffineTransform line;
-    /** font */
-    private PDFFont font;
-    /** font size */
-    private float fsize = 1;
-    /** are we between BT and ET? */
-    private boolean inuse = false;
-    // private Object array[]= new Object[1];
-    /** build text rep of word */
+    /**
+     * build text rep of word
+     */
     private final StringBuilder word = new StringBuilder();
-    // this is where we build and keep the word list for this page.
-    /** start location of the hunk of text */
-    private final Point2D.Float wordStart;
-    /** location of the end of the previous hunk of text */
+    /**
+     * location of the end of the previous hunk of text
+     */
     private final Point2D.Float prevEnd;
+    /**
+     * character spacing
+     */
+    private float tc;
+    /**
+     * word spacing
+     */
+    private float tw;
+    /**
+     * horizontal scaling
+     */
+    private float th = 1;
+    /**
+     * leading
+     */
+    private float tl = 0;
+    /**
+     * rise amount
+     */
+    private float tr;
+    /**
+     * text mode
+     */
+    private int tm = PDFShapeCmd.FILL;
+    /**
+     * matrix transform at start of line
+     */
+    private AffineTransform line;
+    /**
+     * font
+     */
+    private PDFFont font;
+    // private Object array[]= new Object[1];
+    /**
+     * font size
+     */
+    private float fsize = 1;
+    /**
+     * are we between BT and ET?
+     */
+    private boolean inuse = false;
 
     /**
      * create a new PDFTextFormat, with initial values
@@ -73,11 +99,8 @@ public class PDFTextFormat implements Cloneable {
     public PDFTextFormat() {
         this.cur = new AffineTransform();
         this.line = new AffineTransform();
-        this.wordStart = new Point2D.Float(-100, -100);
         this.prevEnd = new Point2D.Float(-100, -100);
-        this.tc = this.tw = this.tr = this.tk = 0;
-        this.tm = PDFShapeCmd.FILL;
-        this.th = 1;
+        this.tc = this.tw = this.tr = 0;
     }
 
     /**
@@ -111,7 +134,7 @@ public class PDFTextFormat implements Cloneable {
      *
      * @param spc a float.
      */
-    public void setCharSpacing(float spc) {
+    public void setCharSpacing(final float spc) {
         this.tc = spc;
     }
 
@@ -129,7 +152,7 @@ public class PDFTextFormat implements Cloneable {
      *
      * @param spc a float.
      */
-    public void setWordSpacing(float spc) {
+    public void setWordSpacing(final float spc) {
         this.tw = spc;
     }
 
@@ -145,10 +168,9 @@ public class PDFTextFormat implements Cloneable {
     /**
      * set the horizontal scale.
      *
-     * @param scl
-     * the horizontal scale, in percent (100=normal)
+     * @param scl the horizontal scale, in percent (100=normal)
      */
-    public void setHorizontalScale(float scl) {
+    public void setHorizontalScale(final float scl) {
         this.th = scl / 100;
     }
 
@@ -166,14 +188,14 @@ public class PDFTextFormat implements Cloneable {
      *
      * @param spc a float.
      */
-    public void setLeading(float spc) {
+    public void setLeading(final float spc) {
         this.tl = spc;
     }
 
     /**
      * get the font
      *
-     * @return a {@link org.loboevolution.pdfview.font.PDFFont} object.
+     * @return a {@link PDFFont} object.
      */
     public PDFFont getFont() {
         return this.font;
@@ -191,10 +213,10 @@ public class PDFTextFormat implements Cloneable {
     /**
      * set the font and size
      *
-     * @param f a {@link org.loboevolution.pdfview.font.PDFFont} object.
+     * @param f    a {@link PDFFont} object.
      * @param size a float.
      */
-    public void setFont(PDFFont f, float size) {
+    public void setFont(final PDFFont f, final float size) {
         this.font = f;
         this.fsize = size;
     }
@@ -211,7 +233,6 @@ public class PDFTextFormat implements Cloneable {
     /**
      * set the mode of the text. The correspondence of m to mode is
      * show in the following table. m is a value from 0-7 in binary:
-     *
      * 000 Fill
      * 001 Stroke
      * 010 Fill + Stroke
@@ -220,14 +241,13 @@ public class PDFTextFormat implements Cloneable {
      * 101 Stroke + Clip
      * 110 Fill + Stroke + Clip
      * 111 Clip
-     *
      * Therefore: Fill corresponds to the low bit being 0; Clip
      * corresponds to the hight bit being 1; and Stroke corresponds
      * to the middle xor low bit being 1.
      *
      * @param m a int.
      */
-    public void setMode(int m) {
+    public void setMode(final int m) {
         int mode = 0;
         if ((m & 0x1) == 0) {
             mode |= PDFShapeCmd.FILL;
@@ -244,11 +264,10 @@ public class PDFTextFormat implements Cloneable {
     /**
      * Set the mode from another text format mode
      *
-     * @param mode
-     * the text render mode using the
-     * codes from PDFShapeCmd and not the wacky PDF codes
+     * @param mode the text render mode using the
+     *             codes from PDFShapeCmd and not the wacky PDF codes
      */
-    public void setTextFormatMode(int mode) {
+    public void setTextFormatMode(final int mode) {
         this.tm = mode;
     }
 
@@ -266,7 +285,7 @@ public class PDFTextFormat implements Cloneable {
      *
      * @param spc a float.
      */
-    public void setRise(float spc) {
+    public void setRise(final float spc) {
         this.tr = spc;
     }
 
@@ -284,7 +303,7 @@ public class PDFTextFormat implements Cloneable {
      * @param x a float.
      * @param y a float.
      */
-    public void carriageReturn(float x, float y) {
+    public void carriageReturn(final float x, final float y) {
         this.line.concatenate(AffineTransform.getTranslateInstance(x, y));
         this.cur.setTransform(this.line);
     }
@@ -292,7 +311,7 @@ public class PDFTextFormat implements Cloneable {
     /**
      * Get the current transform
      *
-     * @return a {@link java.awt.geom.AffineTransform} object.
+     * @return a {@link AffineTransform} object.
      */
     public AffineTransform getTransform() {
         return this.cur;
@@ -303,7 +322,7 @@ public class PDFTextFormat implements Cloneable {
      *
      * @param matrix an array of {@link float} objects.
      */
-    public void setMatrix(float[] matrix) {
+    public void setMatrix(final float[] matrix) {
         this.line = new AffineTransform(matrix);
         this.cur.setTransform(this.line);
     }
@@ -311,25 +330,23 @@ public class PDFTextFormat implements Cloneable {
     /**
      * add some text to the page.
      *
-     * @param cmds
-     * the PDFPage to add the commands to
-     * @param text
-     * the text to add
+     * @param cmds             the PDFPage to add the commands to
+     * @param text             the text to add
      * @param autoAdjustStroke a boolean.
      */
-    public void doText(PDFPage cmds, String text, boolean autoAdjustStroke) {
-        Point2D.Float zero = new Point2D.Float();
-        AffineTransform scale = new AffineTransform(this.fsize * this.th, 0, /* 0 */
-        0, this.fsize, /* 0 */
-        0, this.tr /* 1 */);
-        AffineTransform at = new AffineTransform();
-        List<PDFGlyph> l = this.font.getGlyphs(text);
+    public void doText(final PDFPage cmds, final String text, final boolean autoAdjustStroke) {
+        final Point2D.Float zero = new Point2D.Float();
+        final AffineTransform scale = new AffineTransform(this.fsize * this.th, 0, /* 0 */
+                0, this.fsize, /* 0 */
+                0, this.tr /* 1 */);
+        final AffineTransform at = new AffineTransform();
+        final List<PDFGlyph> l = this.font.getGlyphs(text);
         if (PDFDebugger.SHOW_TEXT_ANCHOR) {
             if (PDFDebugger.DEBUG_TEXT) {
                 PDFDebugger.debug("POINT count: " + l.size());
             }
         }
-        for (PDFGlyph glyph : l) {
+        for (final PDFGlyph glyph : l) {
             at.setTransform(this.cur);
             at.concatenate(scale);
             if (PDFDebugger.SHOW_TEXT_REGIONS) {
@@ -344,7 +361,7 @@ public class PDFTextFormat implements Cloneable {
                 if (PDFDebugger.DEBUG_TEXT) {
                     PDFDebugger.debug("BOX " + path.getBounds());
                 }
-                PDFCmd lastColor = cmds.findLastCommand(PDFFillPaintCmd.class);
+                final PDFCmd lastColor = cmds.findLastCommand(PDFFillPaintCmd.class);
                 if (PDFDebugger.DEBUG_TEXT) {
                     PDFDebugger.debug("BOX " + lastColor);
                 }
@@ -364,7 +381,7 @@ public class PDFTextFormat implements Cloneable {
             }
             advanceX *= this.th;
             if (PDFDebugger.SHOW_TEXT_ANCHOR) {
-                AffineTransform at2 = new AffineTransform();
+                final AffineTransform at2 = new AffineTransform();
                 at2.setTransform(this.cur);
                 GeneralPath path = new GeneralPath();
                 path.moveTo(0, 0);
@@ -377,7 +394,7 @@ public class PDFTextFormat implements Cloneable {
                 if (PDFDebugger.DEBUG_TEXT) {
                     PDFDebugger.debug("POINT " + advance);
                 }
-                PDFCmd lastColor = cmds.findLastCommand(PDFFillPaintCmd.class);
+                final PDFCmd lastColor = cmds.findLastCommand(PDFFillPaintCmd.class);
                 cmds.addFillPaint(PDFPaint.getColorPaint(new Color(255, 0, 0)));
                 cmds.addPath(path, PDFShapeCmd.FILL, autoAdjustStroke);
                 if (lastColor != null) {
@@ -392,21 +409,19 @@ public class PDFTextFormat implements Cloneable {
     /**
      * add some text to the page.
      *
-     * @param cmds
-     * the PDFPage to add the commands to
-     * @param ary
-     * an array of Strings and Doubles, where the Strings
-     * represent text to be added, and the Doubles represent kerning
-     * amounts.
+     * @param cmds             the PDFPage to add the commands to
+     * @param ary              an array of Strings and Doubles, where the Strings
+     *                         represent text to be added, and the Doubles represent kerning
+     *                         amounts.
      * @param autoAdjustStroke a boolean.
      * @throws org.loboevolution.pdfview.PDFParseException if any.
      */
-    public void doText(PDFPage cmds, Object[] ary, boolean autoAdjustStroke) throws PDFParseException {
-        for (Object o : ary) {
+    public void doText(final PDFPage cmds, final Object[] ary, final boolean autoAdjustStroke) throws PDFParseException {
+        for (final Object o : ary) {
             if (o instanceof String) {
                 doText(cmds, (String) o, autoAdjustStroke);
             } else if (o instanceof Double) {
-                float val = ((Double) o).floatValue() / 1000f;
+                final float val = ((Double) o).floatValue() / 1000f;
                 this.cur.translate(-val * this.fsize * this.th, 0);
             } else {
                 throw new PDFParseException("Bad element in TJ array");
@@ -423,23 +438,19 @@ public class PDFTextFormat implements Cloneable {
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Clone the text format
      */
     @Override
-    public Object clone() {
-        PDFTextFormat newFormat = new PDFTextFormat();
-        // copy values
+    public Object clone() throws CloneNotSupportedException {
+        final PDFTextFormat newFormat = new PDFTextFormat();
         newFormat.setCharSpacing(getCharSpacing());
         newFormat.setWordSpacing(getWordSpacing());
         newFormat.setHorizontalScale(getHorizontalScale());
         newFormat.setLeading(getLeading());
         newFormat.setTextFormatMode(getMode());
         newFormat.setRise(getRise());
-        // copy immutable fields
         newFormat.setFont(getFont(), getFontSize());
-        // clone transform (mutable)
-        // newFormat.getTransform().setTransform(getTransform());
         return newFormat;
     }
 }

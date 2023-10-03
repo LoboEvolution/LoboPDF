@@ -1,22 +1,34 @@
-/* Copyright 2008 Pirion Systems Pty Ltd, 139 Warry St,
- * Fortitude Valley, Queensland, Australia
+/*
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Copyright (c) 2014 - 2023 LoboEvolution
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.decrypt;
+package main.java.org.loboevolution.pdfview.decrypt;
+
+import org.loboevolution.pdfview.Identity8BitCharsetEncoder;
+import org.loboevolution.pdfview.PDFDocCharsetEncoder;
+import org.loboevolution.pdfview.PDFStringUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -27,10 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import org.loboevolution.pdfview.Identity8BitCharsetEncoder;
-import org.loboevolution.pdfview.PDFDocCharsetEncoder;
-import org.loboevolution.pdfview.PDFStringUtil;
 
 /**
  * <p>Identifies a PDF Password, expressible either as a string or a
@@ -51,80 +59,22 @@ import org.loboevolution.pdfview.PDFStringUtil;
  * String - we express the password as a class. This class can also offer a best
  * guess at a String representation for a password for encryption versions up to
  * and including 4.</p>
- *
+ * <p>
  * Author Luke Kirby
-  *
  */
 public class PDFPassword {
 
-    /** The empty password */
+    /**
+     * The empty password
+     */
     public static final PDFPassword EMPTY_PASSWORD =
             new PDFPassword(new byte[0]);
-
-    /**
-     * Ensure a non-null PDFPassword by substituting the empty password
-     * for a null password
-     *
-     * @param password the password, may be null
-     * @return a non-null password
-     */
-    public static PDFPassword nonNullPassword(PDFPassword password) {
-        return password != null ? password : EMPTY_PASSWORD;
-    }
-
-    /** the password in bytes, if specified as such */
-    private byte[] passwordBytes = null;
-    /** the passwird as a string, if specified as such */
-    private String passwordString = null;
-
-    /**
-     * Construct a byte-based password
-     *
-     * @param passwordBytes the password bytes
-     */
-    public PDFPassword(byte[] passwordBytes) {
-        this.passwordBytes =
-                passwordBytes != null ? passwordBytes : new byte[0];
-    }
-
-    /**
-     * Construct a string-based password
-     *
-     * @param passwordString the password
-     */
-    public PDFPassword(String passwordString) {
-        this.passwordString = passwordString != null ? passwordString : "";
-    }
-
-    /**
-     * Get the password bytes.
-     *
-     * @param unicodeConversion whether the specific conversion from a unicode
-     * String, as present for version 5 encryption, should be used
-     * @return a list of possible password bytes
-     */
-    List<byte[]> getPasswordBytes(boolean unicodeConversion) {
-        // TODO - handle unicodeConversion when we support version 5
-        if (this.passwordBytes != null || this.passwordString == null) {
-            return Collections.singletonList(this.passwordBytes);
-        } else {
-            if (isAlphaNum7BitString(this.passwordString)) {
-                // there's no reasonthat this string would get encoded
-                // in any other way
-                return Collections.singletonList(
-                        PDFStringUtil.asBytes(this.passwordString));
-            } else {
-                return generatePossiblePasswordBytes(this.passwordString);
-            }
-        }
-    }
-
     /**
      * An array of password byte generators that attempts to enumerate the
      * possible strategies that an encrypting application might take to convert
      * a string to an array of bytes
      */
-    private static final  PasswordByteGenerator[] PASSWORD_BYTE_GENERATORS =
+    private static final PasswordByteGenerator[] PASSWORD_BYTE_GENERATORS =
             new PasswordByteGenerator[]{
 
                     // The best option, and that recommended by the spec, is
@@ -154,6 +104,44 @@ public class PDFPassword {
                     // replace 2-byte chars with ?
                     new IdentityEncodingByteGenerator((byte) '?')
             };
+    /**
+     * the password in bytes, if specified as such
+     */
+    private byte[] passwordBytes = null;
+    /**
+     * the passwird as a string, if specified as such
+     */
+    private String passwordString = null;
+
+    /**
+     * Construct a byte-based password
+     *
+     * @param passwordBytes the password bytes
+     */
+    public PDFPassword(final byte[] passwordBytes) {
+        this.passwordBytes =
+                passwordBytes != null ? passwordBytes : new byte[0];
+    }
+
+    /**
+     * Construct a string-based password
+     *
+     * @param passwordString the password
+     */
+    public PDFPassword(final String passwordString) {
+        this.passwordString = passwordString != null ? passwordString : "";
+    }
+
+    /**
+     * Ensure a non-null PDFPassword by substituting the empty password
+     * for a null password
+     *
+     * @param password the password, may be null
+     * @return a non-null password
+     */
+    public static PDFPassword nonNullPassword(final PDFPassword password) {
+        return password != null ? password : EMPTY_PASSWORD;
+    }
 
     /**
      * Generate some possible byte representations of a string password
@@ -162,11 +150,11 @@ public class PDFPassword {
      * @return a list of unique possible byte representations
      */
     private static List<byte[]> generatePossiblePasswordBytes(
-            String passwordString) {
+            final String passwordString) {
 
         final List<byte[]> possibilties = new ArrayList<>();
         for (final PasswordByteGenerator generator : PASSWORD_BYTE_GENERATORS) {
-            byte[] generated = generator.generateBytes(passwordString);
+            final byte[] generated = generator.generateBytes(passwordString);
             // avoid duplicates
             boolean alreadyGenerated = false;
             for (int i = 0; !alreadyGenerated && i < possibilties.size(); ++i) {
@@ -182,7 +170,30 @@ public class PDFPassword {
         return possibilties;
     }
 
-    private boolean isAlphaNum7BitString(String string) {
+    /**
+     * Get the password bytes.
+     *
+     * @param unicodeConversion whether the specific conversion from a unicode
+     *                          String, as present for version 5 encryption, should be used
+     * @return a list of possible password bytes
+     */
+    List<byte[]> getPasswordBytes(final boolean unicodeConversion) {
+        // TODO - handle unicodeConversion when we support version 5
+        if (this.passwordBytes != null || this.passwordString == null) {
+            return Collections.singletonList(this.passwordBytes);
+        } else {
+            if (isAlphaNum7BitString(this.passwordString)) {
+                // there's no reasonthat this string would get encoded
+                // in any other way
+                return Collections.singletonList(
+                        PDFStringUtil.asBytes(this.passwordString));
+            } else {
+                return generatePossiblePasswordBytes(this.passwordString);
+            }
+        }
+    }
+
+    private boolean isAlphaNum7BitString(final String string) {
         for (int i = 0; i < string.length(); ++i) {
             final char c = string.charAt(i);
             if (c >= 127 || !Character.isLetterOrDigit(c)) {
@@ -196,7 +207,7 @@ public class PDFPassword {
      * Converts a string password to a byte[] representation
      */
     private interface PasswordByteGenerator {
-        byte[] generateBytes(String password);
+        byte[] generateBytes(final String password);
     }
 
     /**
@@ -213,16 +224,16 @@ public class PDFPassword {
          * Class constructor
          *
          * @param replacementByte the byte to replace to use to represent any
-         * unrepresentable character, or null if unrepresentable characters
-         * should just be ignored
+         *                        unrepresentable character, or null if unrepresentable characters
+         *                        should just be ignored
          */
-        protected CharsetEncoderGenerator(Byte replacementByte) {
+        protected CharsetEncoderGenerator(final Byte replacementByte) {
             this.replacementByte = replacementByte;
         }
 
 
         @Override
-		public byte[] generateBytes(String password) {
+        public byte[] generateBytes(final String password) {
             final CharsetEncoder encoder = createCharsetEncoder();
             if (this.replacementByte != null) {
                 encoder.replaceWith(new byte[]{this.replacementByte});
@@ -235,7 +246,7 @@ public class PDFPassword {
                 final byte[] bytes = new byte[b.remaining()];
                 b.get(bytes);
                 return bytes;
-            } catch (CharacterCodingException e) {
+            } catch (final CharacterCodingException e) {
                 // shouldn't happen: unmappable characters should be the only
                 // problem, and we're not handling them with a report
                 return null;
@@ -252,12 +263,12 @@ public class PDFPassword {
     private static class PDFDocEncodingByteGenerator
             extends CharsetEncoderGenerator {
 
-        private PDFDocEncodingByteGenerator(Byte replacementByte) {
+        private PDFDocEncodingByteGenerator(final Byte replacementByte) {
             super(replacementByte);
         }
 
         @Override
-		protected CharsetEncoder createCharsetEncoder() {
+        protected CharsetEncoder createCharsetEncoder() {
             return new PDFDocCharsetEncoder();
         }
     }
@@ -269,12 +280,12 @@ public class PDFPassword {
     private static class IdentityEncodingByteGenerator
             extends CharsetEncoderGenerator {
 
-        private IdentityEncodingByteGenerator(Byte replacementByte) {
+        private IdentityEncodingByteGenerator(final Byte replacementByte) {
             super(replacementByte);
         }
 
         @Override
-		protected CharsetEncoder createCharsetEncoder() {
+        protected CharsetEncoder createCharsetEncoder() {
             return new Identity8BitCharsetEncoder();
         }
     }

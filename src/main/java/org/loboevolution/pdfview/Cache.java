@@ -1,22 +1,29 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
+package main.java.org.loboevolution.pdfview;
 
 import java.awt.image.BufferedImage;
 import java.lang.ref.SoftReference;
@@ -26,13 +33,12 @@ import java.util.Map;
 
 /**
  * A cache of PDF pages and images.
- *
-  *
-  *
  */
 public class Cache {
 
-    /** the pages in the cache, mapped by page number */
+    /**
+     * the pages in the cache, mapped by page number
+     */
     private final Map<Integer, SoftReference<PageRecord>> pages;
 
     /**
@@ -47,9 +53,9 @@ public class Cache {
      * pages which have already been completely rendered.
      *
      * @param pageNumber the page number of this page
-     * @param page the page to add
+     * @param page       the page to add
      */
-    public void addPage(Integer pageNumber, PDFPage page) {
+    public void addPage(final Integer pageNumber, final PDFPage page) {
         addPageRecord(pageNumber, page, null);
     }
 
@@ -58,10 +64,10 @@ public class Cache {
      * pages which are still in the process of being rendered.
      *
      * @param pageNumber the page number of this page
-     * @param page the page to add
-     * @param parser the parser which is parsing this page
+     * @param page       the page to add
+     * @param parser     the parser which is parsing this page
      */
-    public void addPage(Integer pageNumber, PDFPage page, PDFParser parser) {
+    public void addPage(final Integer pageNumber, final PDFPage page, final PDFParser parser) {
         addPageRecord(pageNumber, page, parser);
     }
 
@@ -69,11 +75,11 @@ public class Cache {
      * Add an image to the cache.  This method should be used for images
      * which have already been completely rendered
      *
-     * @param page page this image is associated with
-     * @param info the image info associated with this image
+     * @param page  page this image is associated with
+     * @param info  the image info associated with this image
      * @param image the image to add
      */
-    public void addImage(PDFPage page, ImageInfo info, BufferedImage image) {
+    public void addImage(final PDFPage page, final ImageInfo info, final BufferedImage image) {
         addImageRecord(page, info, image, null);
     }
 
@@ -81,13 +87,13 @@ public class Cache {
      * Add an image to the cache.  This method should be used for images
      * which are still in the process of being rendered.
      *
-     * @param page the page this image is associated with
-     * @param info the image info associated with this image
-     * @param image the image to add
+     * @param page     the page this image is associated with
+     * @param info     the image info associated with this image
+     * @param image    the image to add
      * @param renderer the renderer which is rendering this page
      */
-    public void addImage(PDFPage page, ImageInfo info, BufferedImage image,
-            PDFRenderer renderer) {
+    public void addImage(final PDFPage page, final ImageInfo info, final BufferedImage image,
+                         final PDFRenderer renderer) {
         addImageRecord(page, info, image, renderer);
     }
 
@@ -97,8 +103,8 @@ public class Cache {
      * @param pageNumber the number of the page to get
      * @return the page, if it is in the cache, or null if not
      */
-    public PDFPage getPage(Integer pageNumber) {
-        PageRecord rec = getPageRecord(pageNumber);
+    public PDFPage getPage(final Integer pageNumber) {
+        final PageRecord rec = getPageRecord(pageNumber);
         if (rec != null) {
             return (PDFPage) rec.value;
         }
@@ -113,8 +119,8 @@ public class Cache {
      * @param pageNumber the number of the page to get the parser for
      * @return the parser, or null if it is not in the cache
      */
-    public PDFParser getPageParser(Integer pageNumber) {
-        PageRecord rec = getPageRecord(pageNumber);
+    public PDFParser getPageParser(final Integer pageNumber) {
+        final PageRecord rec = getPageRecord(pageNumber);
         if (rec != null) {
             return (PDFParser) rec.generator;
         }
@@ -130,8 +136,8 @@ public class Cache {
      * @param info the image info that describes the image
      * @return the image if it is in the cache, or null if not
      */
-    public BufferedImage getImage(PDFPage page, ImageInfo info) {
-        Record rec = getImageRecord(page, info);
+    public BufferedImage getImage(final PDFPage page, final ImageInfo info) {
+        final Record rec = getImageRecord(page, info);
         if (rec != null) {
             return (BufferedImage) rec.value;
         }
@@ -147,8 +153,8 @@ public class Cache {
      * @param info the image info describing the image
      * @return the renderer, or null if it is not in the cache
      */
-    public PDFRenderer getImageRenderer(PDFPage page, ImageInfo info) {
-        Record rec = getImageRecord(page, info);
+    public PDFRenderer getImageRenderer(final PDFPage page, final ImageInfo info) {
+        final Record rec = getImageRecord(page, info);
         if (rec != null) {
             return (PDFRenderer) rec.generator;
         }
@@ -163,7 +169,7 @@ public class Cache {
      *
      * @param pageNumber the number of the page to remove
      */
-    public void removePage(Integer pageNumber) {
+    public void removePage(final Integer pageNumber) {
         removePageRecord(pageNumber);
     }
 
@@ -173,7 +179,7 @@ public class Cache {
      * @param page the page the image is generated from
      * @param info the image info of the image to remove
      */
-    public void removeImage(PDFPage page, ImageInfo info) {
+    public void removeImage(final PDFPage page, final ImageInfo info) {
         removeImageRecord(page, info);
     }
 
@@ -181,9 +187,9 @@ public class Cache {
      * The internal routine to add a page to the cache, and return the
      * page record which was generated
      */
-    PageRecord addPageRecord(Integer pageNumber, PDFPage page,
-            PDFParser parser) {
-        PageRecord rec = new PageRecord();
+    PageRecord addPageRecord(final Integer pageNumber, final PDFPage page,
+                             final PDFParser parser) {
+        final PageRecord rec = new PageRecord();
         rec.value = page;
         rec.generator = parser;
 
@@ -197,11 +203,11 @@ public class Cache {
      *
      * @return the record, or null if it's not in the cache
      */
-    PageRecord getPageRecord(Integer pageNumber) {
+    PageRecord getPageRecord(final Integer pageNumber) {
         PDFDebugger.debug("Request for page " + pageNumber, 1000);
-        SoftReference<PageRecord> ref = this.pages.get(pageNumber);
+        final SoftReference<PageRecord> ref = this.pages.get(pageNumber);
         if (ref != null) {
-            String val = (ref.get() == null) ? " not in " : " in ";
+            final String val = (ref.get() == null) ? " not in " : " in ";
             PDFDebugger.debug("Page " + pageNumber + val + "cache", 1000);
             return ref.get();
         }
@@ -214,8 +220,8 @@ public class Cache {
     /**
      * Remove a page's record from the cache
      */
-    PageRecord removePageRecord(Integer pageNumber) {
-        SoftReference<PageRecord> ref = this.pages.remove(pageNumber);
+    PageRecord removePageRecord(final Integer pageNumber) {
+        final SoftReference<PageRecord> ref = this.pages.remove(pageNumber);
         if (ref != null) {
             return ref.get();
         }
@@ -228,17 +234,17 @@ public class Cache {
      * The internal routine to add an image to the cache and return the
      * record that was generated.
      */
-    Record addImageRecord(PDFPage page, ImageInfo info,
-            BufferedImage image, PDFRenderer renderer) {
+    Record addImageRecord(final PDFPage page, final ImageInfo info,
+                          final BufferedImage image, final PDFRenderer renderer) {
         // first, find or create the relevant page record
-        Integer pageNumber = page.getPageNumber();
+        final Integer pageNumber = page.getPageNumber();
         PageRecord pageRec = getPageRecord(pageNumber);
         if (pageRec == null) {
             pageRec = addPageRecord(pageNumber, page, null);
         }
 
         // next, create the image record
-        Record rec = new Record();
+        final Record rec = new Record();
         rec.value = image;
         rec.generator = renderer;
 
@@ -253,17 +259,17 @@ public class Cache {
      *
      * @return the record, or null if it's not in the cache
      */
-    Record getImageRecord(PDFPage page, ImageInfo info) {
+    Record getImageRecord(final PDFPage page, final ImageInfo info) {
         // first find the relevant page record
-        Integer pageNumber = page.getPageNumber();
+        final Integer pageNumber = page.getPageNumber();
 
         PDFDebugger.debug("Request for image on page " + pageNumber, 1000);
 
-        PageRecord pageRec = getPageRecord(pageNumber);
+        final PageRecord pageRec = getPageRecord(pageNumber);
         if (pageRec != null) {
-            SoftReference<Record> ref = pageRec.images.get(info);
+            final SoftReference<Record> ref = pageRec.images.get(info);
             if (ref != null) {
-                String val = (ref.get() == null) ? " not in " : " in ";
+                final String val = (ref.get() == null) ? " not in " : " in ";
                 PDFDebugger.debug("Image on page " + pageNumber + val + " cache", 1000);
                 return ref.get();
             }
@@ -277,12 +283,12 @@ public class Cache {
     /**
      * Remove an image's record from the cache
      */
-    Record removeImageRecord(PDFPage page, ImageInfo info) {
+    Record removeImageRecord(final PDFPage page, final ImageInfo info) {
         // first find the relevant page record
-        Integer pageNumber = page.getPageNumber();
-        PageRecord pageRec = getPageRecord(pageNumber);
+        final Integer pageNumber = page.getPageNumber();
+        final PageRecord pageRec = getPageRecord(pageNumber);
         if (pageRec != null) {
-            SoftReference<Record> ref = pageRec.images.remove(info);
+            final SoftReference<Record> ref = pageRec.images.remove(info);
             if (ref != null) {
                 return ref.get();
             }
@@ -292,22 +298,34 @@ public class Cache {
         return null;
     }
 
-    /** the basic information about a page or image */
+    /**
+     * the basic information about a page or image
+     */
     static class Record {
 
-        /** the page or image itself */
+        /**
+         * the page or image itself
+         */
         Object value;
-        /** the thing generating the page, or null if done/not provided */
+        /**
+         * the thing generating the page, or null if done/not provided
+         */
         BaseWatchable generator;
     }
 
-    /** the record stored for each page in the cache */
-    class PageRecord extends Record {
+    /**
+     * the record stored for each page in the cache
+     */
+    static class PageRecord extends Record {
 
-        /** any images associated with the page */
+        /**
+         * any images associated with the page
+         */
         final Map<ImageInfo, SoftReference<Record>> images;
 
-        /** create a new page record */
+        /**
+         * create a new page record
+         */
         public PageRecord() {
             this.images = Collections.synchronizedMap(new HashMap<>());
         }

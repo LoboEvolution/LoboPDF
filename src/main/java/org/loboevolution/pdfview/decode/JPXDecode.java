@@ -1,87 +1,93 @@
-/* Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+/*
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
 
-package org.loboevolution.pdfview.decode;
+package main.java.org.loboevolution.pdfview.decode;
 
+import org.loboevolution.pdfview.PDFObject;
+import org.loboevolution.pdfview.PDFParseException;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.MemoryCacheImageInputStream;
-
-import org.loboevolution.pdfview.PDFObject;
-import org.loboevolution.pdfview.PDFParseException;
-
 /**
  * decode a JPX encoded imagestream into a byte array.  This class uses Java's
  * image_io JPEG2000 reader to do the decoding.
- *
+ * <p>
  * Author Bernd Rosstauscher
-  *
  */
 public class JPXDecode {
-	
+
     /**
      * <p>decode.</p>
      *
-     * @param dict a {@link org.loboevolution.pdfview.PDFObject} object.
-     * @param buf a {@link java.nio.ByteBuffer} object.
+     * @param dict   a {@link org.loboevolution.pdfview.PDFObject} object.
+     * @param buf    a {@link ByteBuffer} object.
      * @param params a {@link org.loboevolution.pdfview.PDFObject} object.
-     * @return a {@link java.nio.ByteBuffer} object.
+     * @return a {@link ByteBuffer} object.
      * @throws org.loboevolution.pdfview.PDFParseException if any.
      */
-    protected static ByteBuffer decode(PDFObject dict, ByteBuffer buf, PDFObject params) throws PDFParseException {
-        BufferedImage bimg = loadImageData(buf);
-        byte[] output = ImageDataDecoder.decodeImageData(bimg);
-		return ByteBuffer.wrap(output);
+    protected static ByteBuffer decode(final PDFObject dict, final ByteBuffer buf, final PDFObject params) throws PDFParseException {
+        final BufferedImage bimg = loadImageData(buf);
+        final byte[] output = ImageDataDecoder.decodeImageData(bimg);
+        return ByteBuffer.wrap(output);
     }
 
-	/*************************************************************************
-	 * @param buf
-	 * @return
-	 * @throws PDFParseException
-	 * @throws IOException
-	 ************************************************************************/
-    
-	private static BufferedImage loadImageData(ByteBuffer buf) throws PDFParseException {
+    /*************************************************************************
+     * @param buf
+     * @return
+     * @throws PDFParseException
+     * @throws IOException
+     ************************************************************************/
+
+    private static BufferedImage loadImageData(final ByteBuffer buf) throws PDFParseException {
         ImageReader reader = null;
-		try {
-			byte[] input = new byte[buf.remaining()];
-			buf.get(input);
-			Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType("image/jpeg2000");
-			if (!readers.hasNext()) {
-				throw new PDFParseException("JPXDecode failed. No reader available");
-			}
-			reader = readers.next();
-			reader.setInput(new MemoryCacheImageInputStream(new ByteArrayInputStream(input)));
-			BufferedImage bimg = reader.read(0);
-			return bimg;
-		} catch (IOException e) {
+        try {
+            final byte[] input = new byte[buf.remaining()];
+            buf.get(input);
+            final Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType("image/jpeg2000");
+            if (!readers.hasNext()) {
+                throw new PDFParseException("JPXDecode failed. No reader available");
+            }
+            reader = readers.next();
+            reader.setInput(new MemoryCacheImageInputStream(new ByteArrayInputStream(input)));
+            final BufferedImage bimg = reader.read(0);
+            return bimg;
+        } catch (final IOException e) {
             throw new PDFParseException("JPXDecode failed", e);
         } finally {
             if (reader != null) {
                 reader.dispose();
             }
-		}
+        }
 
-	}
+    }
 }

@@ -1,22 +1,29 @@
 /*
- * Copyright 2004 Sun Microsystems, Inc., 4150 Network Circle,
- * Santa Clara, California 95054, U.S.A. All rights reserved.
+ * MIT License
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.loboevolution.pdfview;
+package main.java.org.loboevolution.pdfview;
 
 import java.io.IOException;
 
@@ -30,299 +37,323 @@ import java.io.IOException;
  * <li>A string destintation, which uses the PDF file's Dests entry. in the name
  * directory to map a string to an explicit destination.
  * </ul>
- *
+ * <p>
  * All three of these cases are handled by the getDestination() method.
- *
-  *
-  *
  */
 public class PDFDestination {
 
-	/** The known types of destination */
-	public static final int XYZ = 0;
-	/** Constant <code>FIT=1</code> */
-	public static final int FIT = 1;
-	/** Constant <code>FITH=2</code> */
-	public static final int FITH = 2;
-	/** Constant <code>FITV=3</code> */
-	public static final int FITV = 3;
-	/** Constant <code>FITR=4</code> */
-	public static final int FITR = 4;
-	/** Constant <code>FITB=5</code> */
-	public static final int FITB = 5;
-	/** Constant <code>FITBH=6</code> */
-	public static final int FITBH = 6;
-	/** Constant <code>FITBV=7</code> */
-	public static final int FITBV = 7;
-	/** the type of this destination (from the list above) */
-	private final int type;
-	/** the page we refer to */
-	private final PDFObject pageObj;
-	/** the left coordinate of the fit area, if applicable */
-	private float left;
-	/** the right coordinate of the fit area, if applicable */
-	private float right;
-	/** the top coordinate of the fit area, if applicable */
-	private float top;
-	/** the bottom coordinate of the fit area, if applicable */
-	private float bottom;
-	/** the zoom, if applicable */
-	private float zoom;
+    /**
+     * The known types of destination
+     */
+    public static final int XYZ = 0;
+    /**
+     * Constant <code>FIT=1</code>
+     */
+    public static final int FIT = 1;
+    /**
+     * Constant <code>FITH=2</code>
+     */
+    public static final int FITH = 2;
+    /**
+     * Constant <code>FITV=3</code>
+     */
+    public static final int FITV = 3;
+    /**
+     * Constant <code>FITR=4</code>
+     */
+    public static final int FITR = 4;
+    /**
+     * Constant <code>FITB=5</code>
+     */
+    public static final int FITB = 5;
+    /**
+     * Constant <code>FITBH=6</code>
+     */
+    public static final int FITBH = 6;
+    /**
+     * Constant <code>FITBV=7</code>
+     */
+    public static final int FITBV = 7;
+    /**
+     * the type of this destination (from the list above)
+     */
+    private final int type;
+    /**
+     * the page we refer to
+     */
+    private final PDFObject pageObj;
+    /**
+     * the left coordinate of the fit area, if applicable
+     */
+    private float left;
+    /**
+     * the right coordinate of the fit area, if applicable
+     */
+    private float right;
+    /**
+     * the top coordinate of the fit area, if applicable
+     */
+    private float top;
+    /**
+     * the bottom coordinate of the fit area, if applicable
+     */
+    private float bottom;
+    /**
+     * the zoom, if applicable
+     */
+    private float zoom;
 
-	/**
-	 * Creates a new instance of PDFDestination
-	 *
-	 * @param pageObj
-	 *            the page object this destination refers to
-	 * @param type
-	 *            the type of page this object refers to
-	 */
-	protected PDFDestination(PDFObject pageObj, int type) {
-		this.pageObj = pageObj;
-		this.type = type;
-	}
+    /**
+     * Creates a new instance of PDFDestination
+     *
+     * @param pageObj the page object this destination refers to
+     * @param type    the type of page this object refers to
+     */
+    protected PDFDestination(final PDFObject pageObj, final int type) {
+        this.pageObj = pageObj;
+        this.type = type;
+    }
 
-	/**
-	 * Get a destination from either an array (explicit destination), a name
-	 * (named destination) or a string (name tree destination).
-	 *
-	 * @param obj
-	 *            the PDFObject representing this destination
-	 * @param root
-	 *            the root of the PDF object tree
-	 * @return a {@link org.loboevolution.pdfview.PDFDestination} object.
-	 * @throws java.io.IOException if any.
-	 */
-	public static PDFDestination getDestination(PDFObject obj, PDFObject root) throws IOException {
-		// resolve string and name issues
-		if (obj.getType() == PDFObject.NAME) {
-			obj = getDestFromName(obj, root);
-		} else if (obj.getType() == PDFObject.STRING) {
-			obj = getDestFromString(obj, root);
-		}
+    /**
+     * Get a destination from either an array (explicit destination), a name
+     * (named destination) or a string (name tree destination).
+     *
+     * @param obj  the PDFObject representing this destination
+     * @param root the root of the PDF object tree
+     * @return a {@link org.loboevolution.pdfview.PDFDestination} object.
+     * @throws IOException if any.
+     */
+    public static PDFDestination getDestination(final PDFObject pdfObj, final PDFObject root) throws IOException {
+        PDFObject obj = pdfObj;
+        // resolve string and name issues
+        if (obj.getType() == PDFObject.NAME) {
+            obj = getDestFromName(obj, root);
+        } else if (obj.getType() == PDFObject.STRING) {
+            obj = getDestFromString(obj, root);
+        }
 
-		// make sure we have the right kind of object
-		if (obj == null || obj.getType() != PDFObject.ARRAY) {
-			throw new PDFParseException("Can't create destination from: " + obj);
-		}
+        // make sure we have the right kind of object
+        if (obj == null || obj.getType() != PDFObject.ARRAY) {
+            throw new PDFParseException("Can't create destination from: " + obj);
+        }
 
-		// the array is in the form [page type args ... ]
-		PDFObject[] destArray = obj.getArray();
+        // the array is in the form [page type args ... ]
+        final PDFObject[] destArray = obj.getArray();
 
-		// create the destination based on the type
-		PDFDestination dest = null;
-		String type = destArray[1].getStringValue();
-		switch (type) {
-		case "XYZ":
-			dest = new PDFDestination(destArray[0], XYZ);
-			break;
-		case "Fit":
-			dest = new PDFDestination(destArray[0], FIT);
-			break;
-		case "FitH":
-			dest = new PDFDestination(destArray[0], FITH);
-			break;
-		case "FitV":
-			dest = new PDFDestination(destArray[0], FITV);
-			break;
-		case "FitR":
-			dest = new PDFDestination(destArray[0], FITR);
-			break;
-		case "FitB":
-			dest = new PDFDestination(destArray[0], FITB);
-			break;
-		case "FitBH":
-			dest = new PDFDestination(destArray[0], FITBH);
-			break;
-		case "FitBV":
-			dest = new PDFDestination(destArray[0], FITBV);
-			break;
-		default:
-			throw new PDFParseException("Unknown destination type: " + type);
-		}
+        // create the destination based on the type
+        PDFDestination dest = null;
+        final String type = destArray[1].getStringValue();
+        switch (type) {
+            case "XYZ":
+                dest = new PDFDestination(destArray[0], XYZ);
+                break;
+            case "Fit":
+                dest = new PDFDestination(destArray[0], FIT);
+                break;
+            case "FitH":
+                dest = new PDFDestination(destArray[0], FITH);
+                break;
+            case "FitV":
+                dest = new PDFDestination(destArray[0], FITV);
+                break;
+            case "FitR":
+                dest = new PDFDestination(destArray[0], FITR);
+                break;
+            case "FitB":
+                dest = new PDFDestination(destArray[0], FITB);
+                break;
+            case "FitBH":
+                dest = new PDFDestination(destArray[0], FITBH);
+                break;
+            case "FitBV":
+                dest = new PDFDestination(destArray[0], FITBV);
+                break;
+            default:
+                throw new PDFParseException("Unknown destination type: " + type);
+        }
 
-		// now fill in the arguments based on the type
-		switch (dest.getType()) {
-		case XYZ:
-			dest.setLeft(destArray[2].getFloatValue());
-			dest.setTop(destArray[3].getFloatValue());
-			dest.setZoom(destArray[4].getFloatValue());
-			break;
-		case FITH:
+        // now fill in the arguments based on the type
+        switch (dest.getType()) {
+            case XYZ:
+                dest.setLeft(destArray[2].getFloatValue());
+                dest.setTop(destArray[3].getFloatValue());
+                dest.setZoom(destArray[4].getFloatValue());
+                break;
+            case FITH:
             case FITBV:
             case FITBH:
             case FITV:
                 if (destArray.length > 2) {
-				dest.setTop(destArray[2].getFloatValue());
-			} else {
-				dest.setTop(0.0F);
-			}
-			break;
+                    dest.setTop(destArray[2].getFloatValue());
+                } else {
+                    dest.setTop(0.0F);
+                }
+                break;
             case FITR:
-			dest.setLeft(destArray[2].getFloatValue());
-			dest.setBottom(destArray[3].getFloatValue());
-			dest.setRight(destArray[4].getFloatValue());
-			dest.setTop(destArray[5].getFloatValue());
-			break;
+                dest.setLeft(destArray[2].getFloatValue());
+                dest.setBottom(destArray[3].getFloatValue());
+                dest.setRight(destArray[4].getFloatValue());
+                dest.setTop(destArray[5].getFloatValue());
+                break;
             default:
-			break;
-		}
+                break;
+        }
 
-		return dest;
-	}
+        return dest;
+    }
 
-	/**
-	 * Get the type of this destination
-	 *
-	 * @return a int.
-	 */
-	public int getType() {
-		return this.type;
-	}
+    /**
+     * Get a destination, given a name. This means the destination is in the
+     * root node's dests dictionary.
+     */
+    private static PDFObject getDestFromName(final PDFObject name, final PDFObject root) throws IOException {
+        // find the dests object in the root node
+        final PDFObject dests = root.getDictRef("Dests");
+        if (dests != null) {
+            // find this name in the dests dictionary
+            return dests.getDictRef(name.getStringValue());
+        }
 
-	/**
-	 * Get the PDF Page object associated with this destination
-	 *
-	 * @return a {@link org.loboevolution.pdfview.PDFObject} object.
-	 */
-	public PDFObject getPage() {
-		return this.pageObj;
-	}
+        // not found
+        return null;
+    }
 
-	/**
-	 * Get the left coordinate value
-	 *
-	 * @return a float.
-	 */
-	public float getLeft() {
-		return this.left;
-	}
+    /**
+     * Get a destination, given a string. This means the destination is in the
+     * root node's names dictionary.
+     */
+    private static PDFObject getDestFromString(final PDFObject str, final PDFObject root) throws IOException {
+        // find the names object in the root node
+        final PDFObject names = root.getDictRef("Names");
+        if (names != null) {
+            // find the dests entry in the names dictionary
+            final PDFObject dests = names.getDictRef("Dests");
+            if (dests != null) {
+                // create a name tree object
+                final NameTree tree = new NameTree(dests);
 
-	/**
-	 * Set the left coordinate value
-	 *
-	 * @param left a float.
-	 */
-	public void setLeft(float left) {
-		this.left = left;
-	}
+                // find the value we're looking for
+                PDFObject obj = tree.find(str.getStringValue());
 
-	/**
-	 * Get the right coordinate value
-	 *
-	 * @return a float.
-	 */
-	public float getRight() {
-		return this.right;
-	}
+                // if we get back a dictionary, look for the /D value
+                if (obj != null && obj.getType() == PDFObject.DICTIONARY) {
+                    obj = obj.getDictRef("D");
+                }
 
-	/**
-	 * Set the right coordinate value
-	 *
-	 * @param right a float.
-	 */
-	public void setRight(float right) {
-		this.right = right;
-	}
+                // found it
+                return obj;
+            }
+        }
 
-	/**
-	 * Get the top coordinate value
-	 *
-	 * @return a float.
-	 */
-	public float getTop() {
-		return this.top;
-	}
+        // not found
+        return null;
+    }
 
-	/**
-	 * Set the top coordinate value
-	 *
-	 * @param top a float.
-	 */
-	public void setTop(float top) {
-		this.top = top;
-	}
+    /**
+     * Get the type of this destination
+     *
+     * @return a int.
+     */
+    public int getType() {
+        return this.type;
+    }
 
-	/**
-	 * Get the bottom coordinate value
-	 *
-	 * @return a float.
-	 */
-	public float getBottom() {
-		return this.bottom;
-	}
+    /**
+     * Get the PDF Page object associated with this destination
+     *
+     * @return a {@link org.loboevolution.pdfview.PDFObject} object.
+     */
+    public PDFObject getPage() {
+        return this.pageObj;
+    }
 
-	/**
-	 * Set the bottom coordinate value
-	 *
-	 * @param bottom a float.
-	 */
-	public void setBottom(float bottom) {
-		this.bottom = bottom;
-	}
+    /**
+     * Get the left coordinate value
+     *
+     * @return a float.
+     */
+    public float getLeft() {
+        return this.left;
+    }
 
-	/**
-	 * Get the zoom value
-	 *
-	 * @return a float.
-	 */
-	public float getZoom() {
-		return this.zoom;
-	}
+    /**
+     * Set the left coordinate value
+     *
+     * @param left a float.
+     */
+    public void setLeft(final float left) {
+        this.left = left;
+    }
 
-	/**
-	 * Set the zoom value
-	 *
-	 * @param zoom a float.
-	 */
-	public void setZoom(float zoom) {
-		this.zoom = zoom;
-	}
+    /**
+     * Get the right coordinate value
+     *
+     * @return a float.
+     */
+    public float getRight() {
+        return this.right;
+    }
 
-	/**
-	 * Get a destination, given a name. This means the destination is in the
-	 * root node's dests dictionary.
-	 */
-	private static PDFObject getDestFromName(PDFObject name, PDFObject root) throws IOException {
-		// find the dests object in the root node
-		PDFObject dests = root.getDictRef("Dests");
-		if (dests != null) {
-			// find this name in the dests dictionary
-			return dests.getDictRef(name.getStringValue());
-		}
+    /**
+     * Set the right coordinate value
+     *
+     * @param right a float.
+     */
+    public void setRight(final float right) {
+        this.right = right;
+    }
 
-		// not found
-		return null;
-	}
+    /**
+     * Get the top coordinate value
+     *
+     * @return a float.
+     */
+    public float getTop() {
+        return this.top;
+    }
 
-	/**
-	 * Get a destination, given a string. This means the destination is in the
-	 * root node's names dictionary.
-	 */
-	private static PDFObject getDestFromString(PDFObject str, PDFObject root) throws IOException {
-		// find the names object in the root node
-		PDFObject names = root.getDictRef("Names");
-		if (names != null) {
-			// find the dests entry in the names dictionary
-			PDFObject dests = names.getDictRef("Dests");
-			if (dests != null) {
-				// create a name tree object
-				NameTree tree = new NameTree(dests);
+    /**
+     * Set the top coordinate value
+     *
+     * @param top a float.
+     */
+    public void setTop(final float top) {
+        this.top = top;
+    }
 
-				// find the value we're looking for
-				PDFObject obj = tree.find(str.getStringValue());
+    /**
+     * Get the bottom coordinate value
+     *
+     * @return a float.
+     */
+    public float getBottom() {
+        return this.bottom;
+    }
 
-				// if we get back a dictionary, look for the /D value
-				if (obj != null && obj.getType() == PDFObject.DICTIONARY) {
-					obj = obj.getDictRef("D");
-				}
+    /**
+     * Set the bottom coordinate value
+     *
+     * @param bottom a float.
+     */
+    public void setBottom(final float bottom) {
+        this.bottom = bottom;
+    }
 
-				// found it
-				return obj;
-			}
-		}
+    /**
+     * Get the zoom value
+     *
+     * @return a float.
+     */
+    public float getZoom() {
+        return this.zoom;
+    }
 
-		// not found
-		return null;
-	}
+    /**
+     * Set the zoom value
+     *
+     * @param zoom a float.
+     */
+    public void setZoom(final float zoom) {
+        this.zoom = zoom;
+    }
 }

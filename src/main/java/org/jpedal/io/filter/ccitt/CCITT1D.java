@@ -1,28 +1,29 @@
-/**
- * ===========================================
- * Java Pdf Extraction Decoding Access Library
- * ===========================================
- * Project Info:  http://www.jpedal.org
- * (C) Copyright 1997-2011, IDRsolutions and Contributors.
- * This file is part of JPedal
- * Modified for use in PDF Renderer.
- * <p>
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- * ---------------
- * CCITT1D.java
- * ---------------
+/*
+ * MIT License
+ *
+ * Copyright (c) 2014 - 2023 LoboEvolution
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Contact info: ivan.difrancesco@yahoo.it
  */
-package org.jpedal.io.filter.ccitt;
+package main.java.org.jpedal.io.filter.ccitt;
 
 import java.util.BitSet;
 
@@ -31,42 +32,8 @@ import java.util.BitSet;
  */
 public class CCITT1D implements CCITTDecoder {
 
-    /**
-     * values set in PdfObject
-     */
-    boolean BlackIs1 = false, isByteAligned = false;
-    int columns = 1728;
-
-    byte[] data;
-
-    int bitReached;
-
     private final static int EOL = -1;
-
     private static final boolean debug = false;
-
-    boolean isWhite = true;
-    private boolean isTerminating = false;
-
-    private boolean isEndOfLine = false;
-    private boolean EOS = false;
-
-    private int cRTC = 0;
-    int width = 0;
-    int height = 0;
-    private int line = 0;
-    private int rowC = 0;
-
-    BitSet out;
-    private BitSet inputBits;
-    int outPtr = 0;
-
-    private int bytesNeeded = 0;
-    int scanlineStride;
-    private int inputBitCount = 0;
-
-    // ---------- BLACK --------------
-
     final static private int[][][] b = new int[][][]{
             {{3, 2, 0}, {2, 3, 0}},
             {{2, 1, 0}, {3, 4, 0}},
@@ -208,9 +175,6 @@ public class CCITT1D implements CCITTDecoder {
                     {100, 1664, 1},
                     {101, 1728, 1}
             }};
-
-    // ---------- WHITE --------------
-
     final static private int[][][] w = new int[][][]{{
             {7, 2, 0},
             {8, 3, 0},
@@ -346,10 +310,36 @@ public class CCITT1D implements CCITTDecoder {
                     {30, 2496, 1},
                     {31, 2560, 1}
             }};
+    /**
+     * values set in PdfObject
+     */
+    boolean BlackIs1 = false, isByteAligned = false;
+    int columns = 1728;
+    byte[] data;
+    int bitReached;
+    boolean isWhite = true;
+    int width = 0;
+    int height = 0;
+    BitSet out;
+    int outPtr = 0;
+    int scanlineStride;
+    private boolean isTerminating = false;
+    private boolean isEndOfLine = false;
+    private boolean EOS = false;
+    private int cRTC = 0;
+    private int line = 0;
+    private int rowC = 0;
+    private BitSet inputBits;
+
+    // ---------- BLACK --------------
+    private int bytesNeeded = 0;
+
+    // ---------- WHITE --------------
+    private int inputBitCount = 0;
 
 
-    public CCITT1D(byte[] rawData, int width, int height,
-                   boolean blackIsOne, boolean isByteAligned) {
+    public CCITT1D(final byte[] rawData, final int width, final int height,
+                   final boolean blackIsOne, final boolean isByteAligned) {
 
         this.data = rawData;
         this.bitReached = 0;
@@ -359,11 +349,6 @@ public class CCITT1D implements CCITTDecoder {
         BlackIs1 = blackIsOne;
 
         this.isByteAligned = isByteAligned;
-
-        //if(debug)
-        //    System.out.println("BlackIs1="+ BlackIs1 +"\ncolumnsSet="+columnsSet+"\nisByteAligned="+isByteAligned+"\nrowsSet="+rowsSet);
-
-        //and other values which might use defaults set from PdfObject
         this.width = columns;
         this.height = height;
 
@@ -384,6 +369,52 @@ public class CCITT1D implements CCITTDecoder {
     CCITT1D() {
     }
 
+    private static int checkTables(final int possCode, final int bitLength, final boolean isWhite) {
+
+        int itemFound = -1;
+        final int[][] table;
+
+        if (isWhite) {
+            table = w[bitLength - 4];
+        } else {
+            table = b[bitLength - 2];
+        }
+
+        final int size = table.length;
+
+        for (int z = 0; z < size; z++) {
+            if (possCode == table[z][0]) {
+                itemFound = z;
+                z = size;
+
+            }
+        }
+        return itemFound;
+    }
+
+    private static BitSet fromByteArray(final byte[] bytes, final int bitsNeeded) {
+
+        int bitSetPtr = 0, value;
+        byte tmp;
+
+        final BitSet bits = new BitSet(bitsNeeded);
+        for (final byte aByte : bytes) {
+            tmp = aByte;
+            for (int z = 7; z >= 0; z--) {
+
+                value = (tmp & (1 << z));
+
+                if (value >= 1)
+                    bits.set(bitSetPtr, true);
+
+                bitSetPtr++;
+            }
+        }
+
+        return bits;
+
+    }
+
     public byte[] decode() {
 
         moveToEOLMarker();
@@ -398,7 +429,7 @@ public class CCITT1D implements CCITTDecoder {
 
     byte[] creatOutputFromBitset() {
 
-        byte[] output = new byte[bytesNeeded];
+        final byte[] output = new byte[bytesNeeded];
 
         //assemble all tokens into a decompressed output data block
         int bytePtr = 0, bitPtr = 7, mask;
@@ -409,7 +440,7 @@ public class CCITT1D implements CCITTDecoder {
             if (out.get(j)) {
                 mask = 1 << bitPtr;
 
-                entry |= mask;
+                entry |= (byte) mask;
                 bitPtr--;
             } else {
                 bitPtr--;
@@ -450,10 +481,10 @@ public class CCITT1D implements CCITTDecoder {
             }
 
             //remember state as getPixelCount will alter
-            boolean pixelIsWhite = isWhite;
+            final boolean pixelIsWhite = isWhite;
 
             //decode the next codeword and get how many pixels written out
-            int pixelCount = getCodeWord();
+            final int pixelCount = getCodeWord();
 
             //set bits
             if (pixelCount > 0) {
@@ -509,9 +540,9 @@ public class CCITT1D implements CCITTDecoder {
         return pixelCount;
     }
 
-    private int processCodeWord(int itemFound, int code, int bits) {
-        int pixelCount;
-        boolean isT;
+    private int processCodeWord(final int itemFound, final int code, final int bits) {
+        final int pixelCount;
+        final boolean isT;
 
         //values in ther table
         if (isWhite) {
@@ -561,8 +592,8 @@ public class CCITT1D implements CCITTDecoder {
         if (cRTC != 6 && isEndOfLine && isByteAligned) {
 
             //get bits over 8 and align to byte boundary
-            int iPart = (bitReached) % 8;
-            int iDrop = 8 - (iPart);
+            final int iPart = (bitReached) % 8;
+            final int iDrop = 8 - (iPart);
             if (iPart > 0) {
                 bitReached = bitReached + iDrop;
             }
@@ -572,11 +603,11 @@ public class CCITT1D implements CCITTDecoder {
     }
 
     //2D version
-    int get1DBits(int bitsToGet) {
+    int get1DBits(final int bitsToGet) {
         return get1DBits(bitsToGet, false);
     }
 
-    private int get1DBits(int bitsToGet, boolean is1D) {
+    private int get1DBits(final int bitsToGet, final boolean is1D) {
 
         int tmp = 0;
 
@@ -594,52 +625,6 @@ public class CCITT1D implements CCITTDecoder {
         }
 
         return tmp;
-    }
-
-    private static int checkTables(int possCode, int bitLength, boolean isWhite) {
-
-        int itemFound = -1;
-        int[][] table;
-
-        if (isWhite) {
-            table = w[bitLength - 4];
-        } else {
-            table = b[bitLength - 2];
-        }
-
-        int size = table.length;
-
-        for (int z = 0; z < size; z++) {
-            if (possCode == table[z][0]) {
-                itemFound = z;
-                z = size;
-
-            }
-        }
-        return itemFound;
-    }
-
-    private static BitSet fromByteArray(byte[] bytes, int bitsNeeded) {
-
-        int bitSetPtr = 0, value;
-        byte tmp;
-
-        BitSet bits = new BitSet(bitsNeeded);
-        for (int i = 0; i < bytes.length; i++) {
-            tmp = bytes[i];
-            for (int z = 7; z >= 0; z--) {
-
-                value = (tmp & (1 << z));
-
-                if (value >= 1)
-                    bits.set(bitSetPtr, true);
-
-                bitSetPtr++;
-            }
-        }
-
-        return bits;
-
     }
 
     private void moveToEOLMarker() {
